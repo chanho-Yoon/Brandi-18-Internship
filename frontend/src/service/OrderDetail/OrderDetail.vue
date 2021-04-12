@@ -131,8 +131,9 @@ postal: "1212"
 </template>
 
 <script>
-import API from '@/service/util/service-api'
-import SERVER from '@/config.js'
+// import API from '@/service/util/service-api'
+// import SERVER from '@/config.js'
+import mockup from '@/Data/MypageOrderDetail.json'
 
 export default {
   data () {
@@ -142,21 +143,21 @@ export default {
     }
   },
   mounted () {
-    // this.detailData = mockup.data
+    this.detailData = mockup.result.data
     // this.sizeData = mockup.sizeData
     // mockup.options
-    API.methods
-      .get(`${SERVER.IP}/mypage/order/${this.$route.params.no}`)
-      .then((res) => {
-        // console.log(res.data.result)
-        this.detailData = res.data.result.data
-        this.shipping = res.data.result.shipping
-      })
-      .catch(() => {
-        // console.log(error)
-        this.$router.push('/main')
-        alert('존재하지 않는 서비스 상품입니다.')
-      })
+    // API.methods
+    //   .get(`${SERVER.IP}/mypage/order/${this.$route.params.no}`)
+    //   .then((res) => {
+    //     // console.log(res.data.result)
+    //     this.detailData = res.data.result.data
+    //     this.shipping = res.data.result.shipping
+    //   })
+    //   .catch(() => {
+    //     // console.log(error)
+    //     this.$router.push('/main')
+    //     alert('존재하지 않는 서비스 상품입니다.')
+    //   })
   }
 }
 </script>

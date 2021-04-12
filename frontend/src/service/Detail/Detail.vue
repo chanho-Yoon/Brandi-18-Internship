@@ -89,7 +89,7 @@ import { VueAgile } from 'vue-agile'
 import QnA from './QnA'
 import DropDown from '@/service/Components/DropDown'
 import OptionQuantity from './OptionQuantity'
-// import mockup from '@/Data/Detail.json'
+import mockup from '@/Data/Detail.json'
 import { mapMutations, mapGetters } from 'vuex'
 import OtherProduct from '@/service/Detail/BrandOtherProduct'
 
@@ -104,18 +104,19 @@ export default {
     OtherProduct
   },
   mounted () {
-    API.methods
-      .get(`${SERVER.IP}/products/${this.$route.params.id}`)
-      .then((res) => {
-        // console.log(res.data.result)
-        this.detailData = res.data.result.product
-        this.loadRecommends()
-      })
-      .catch(() => {
-        // console.log(error)
-        this.$router.push('/main')
-        alert('존재하지 않는 서비스 상품입니다.')
-      })
+    this.detailData = mockup.data
+    // API.methods
+    //   .get(`${SERVER.IP}/products/${this.$route.params.id}`)
+    //   .then((res) => {
+    //     // console.log(res.data.result)
+    //     this.detailData = res.data.result.product
+    //     this.loadRecommends()
+    //   })
+    //   .catch(() => {
+    //     // console.log(error)
+    //     this.$router.push('/main')
+    //     alert('존재하지 않는 서비스 상품입니다.')
+    //   })
   },
   props: {
     id: String

@@ -94,16 +94,16 @@ export default {
   methods: {
     getOrderData () {
       // const token = this.getToken
-      // this.orderList = this.orderList.concat(mockup.result.data)
-      API.methods
-        .get(`${SERVER.IP}/mypage/order`)
-        .then(res => {
-          // console.log(res.data.result.data)
-          this.orderList = this.orderList.concat(res.data.result.data)
-        })
-        .catch(error => {
-          alert(error)
-        })
+      this.orderList = mockup.result.data
+      // API.methods
+      //   .get(`${SERVER.IP}/mypage/order`)
+      //   .then(res => {
+      //     // console.log(res.data.result.data)
+      //     this.orderList = this.orderList.concat(res.data.result.data)
+      //   })
+      //   .catch(error => {
+      //     alert(error)
+      //   })
     },
     // 2020-08-29 형태로 변환
     getDate (x) {

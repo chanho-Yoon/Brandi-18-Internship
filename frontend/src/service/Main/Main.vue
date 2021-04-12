@@ -33,6 +33,7 @@ import mockup from '@/Data/ProductMain.json'
 // import axios from 'axios'
 
 export default {
+  name: 'main',
   components: {
     Banner,
     ProductBox
@@ -47,15 +48,15 @@ export default {
   },
   methods: {
     getProductData () {
-      // this.products = mockup.result.data
-      API.methods.get(`${SERVER.IP}/products/list`)
-        .then((res) => {
-          // console.log(res)
-          this.products = res.data.result.data
-        })
-        .catch(() => {
-          this.$router.push('/error/500')
-        })
+      this.products = mockup.result.data
+      // API.methods.get(`${SERVER.IP}/products/list`)
+      //   .then((res) => {
+      //     // console.log(res)
+      //     this.products = res.data.result.data
+      //   })
+      //   .catch(() => {
+      //     this.$router.push('/error/500')
+      //   })
     },
     numberWithCommas (x) {
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
