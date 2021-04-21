@@ -1,4 +1,4 @@
-from model import OrderDao
+from admin.model import OrderDao
 
 order_dao = OrderDao()
 class OrderService:
