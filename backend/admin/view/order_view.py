@@ -37,27 +37,15 @@ class OrderListView(MethodView):
     
     # order_status_type 변경
     # @login_required
-    @validate_params(
-        Param('')
-    )
     def patch(self):
         conn = None
         try:
             body = request.get_json()
             
             conn = get_connection()
-            """
-                [
-                    {"order_detail_id" : 1, "order_status_id": 2},
-                    {"order_detail_id" : 2, "order_status_id": 2},
-                    {"order_detail_id" : 3, "order_status_id": 2}
-                ] 
-
-            """
-
-            if conn:
-                self.service.patch_order_status_type(conn, body)
-            
+                
+            self.service.patch_order_status_type(conn, body)
+                        
             conn.commit()
             
             # return jsonify({"message" : "SUCCESS"}), 200

@@ -1,14 +1,23 @@
-def error_response(server_message, user_message):
-    response = {"server_message" : message,
-                "user_message" : user_message}
+def error_response(user_error_message, dev_error_message, status_code=500):
+    response = {
+                    "user_error_message" : user_error_message,
+                    "dev_error_message" : dev_error_message,
+                    "status_code": status_code
+                }
     return response
 
-def post_response(message):
-    response = {"message": message}
+def post_response(message, status_code=200):
+    response = {
+                    "message": message,
+                    "status_code": status_code
+                }
     return response
 
-def get_response(results):
-    response = {"results" : results}
+def get_response(results, status_code=200):
+    response = {
+                    "results" : results,
+                    "status_code": status_code
+                }
     return response
 
 
