@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
 
-
 from admin.service import (
     ProductService,
     OrderService,
@@ -9,8 +8,6 @@ from admin.service import (
 )
 
 from admin.view import create_endpoints
-
-from utils.error_handler import error_handle
 
 class Service:
     pass
@@ -33,7 +30,5 @@ def create_app(test_config=None):
 
     # endpoint 생성
     create_endpoints(app, services)
-
-    error_handle(app)
 
     return app
