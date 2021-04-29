@@ -43,11 +43,11 @@ def create_endpoints(app, services):
                     methods=['GET'])
 
     # account
-    app.add_url_rule("/signup",
+    app.add_url_rule("/user/signup",
                     view_func=SignUpView.as_view('signup_view', account_service),
                     methods=['POST'])
     
-    app.add_url_rule("/signin",
+    app.add_url_rule("/user/signin",
                     view_func=SignInView.as_view('signin_view', account_service),
                     methods=['POST'])
     

@@ -5,8 +5,18 @@
         <h1 class="loginTitle">오늘 사면 내일 도착!</h1>
         <h2 class="subLoginTitle">무료배송으로 내일 받는 브랜디 LOGIN</h2>
         <div class="loginContainer">
-          <input type="text" class="loginInput" placeholder="아이디 입력" v-model="username" />
-          <input type="password" class="loginInput" placeholder="비밀번호 입력" v-model="password" />
+          <input
+            type="text"
+            class="loginInput"
+            placeholder="아이디 입력"
+            v-model="username"
+          />
+          <input
+            type="password"
+            class="loginInput"
+            placeholder="비밀번호 입력"
+            v-model="password"
+          />
           <a class="loginBtn" @click="login">로그인</a>
           <a class="JoinBtn" @click="linkToSignUp">회원가입</a>
           <div class="loginFind">
@@ -16,10 +26,15 @@
           </div>
           <div></div>
           <h3 class="socialTitle">간편 로그인 / 가입</h3>
-          <GoogleLogin class="googleLogin" :params="params" :onSuccess="onSuccess">
+          <GoogleLogin
+            class="googleLogin"
+            :params="params"
+            :onSuccess="onSuccess"
+          >
             <div class="imgContainer">
               <img src="/Images/google-logo.png" />
-            </div>Google 계정으로 계속하기
+            </div>
+            Google 계정으로 계속하기
           </GoogleLogin>
         </div>
       </main>
@@ -40,7 +55,7 @@ export default {
     GoogleLogin
     // Footer
   },
-  data () {
+  data() {
     return {
       // 구글 로그인 하기
       params: {
@@ -58,7 +73,7 @@ export default {
   methods: {
     ...mapMutations(serviceStore, ['getStorageToken']),
 
-    onSuccess (googleUser) {
+    onSuccess(googleUser) {
       localStorage.setItem('user_id', googleUser.tt.Ad)
       localStorage.setItem('user_email', googleUser.tt.bu)
 
@@ -83,7 +98,7 @@ export default {
           }
         })
     },
-    linkToSignUp () {
+    linkToSignUp() {
       if (this.getToken) {
         localStorage.removeItem('access_token')
         this.getStorageToken()
@@ -92,12 +107,13 @@ export default {
         this.$route.path !== '/signup' && this.$router.push('/signup')
       }
     },
-    login () {
+    login() {
       const data = {
         username: this.username,
         password: this.password
       }
-      API.methods.post(`${SERVER.IP}/user/signin`, data)
+      API.methods
+        .post(`${SERVER.IP}/user/signin`, data)
         .then((res) => {
           localStorage.setItem('service_token', res.data.result.accessToken)
           this.$router.push('/main')
@@ -125,14 +141,14 @@ export default {
       font-size: 34px;
       font-weight: bold;
       color: #ff204b;
-      font-family: "Spoqa Han Sans", Sans-serif;
+      font-family: 'Spoqa Han Sans', Sans-serif;
     }
 
     .subLoginTitle {
       margin-top: 20px;
       font-size: 32px;
       font-weight: 100;
-      font-family: "Spoqa Han Sans", Sans-serif;
+      font-family: 'Spoqa Han Sans', Sans-serif;
     }
 
     .loginContainer {
@@ -236,3 +252,4 @@ export default {
   }
 }
 </style>
+
