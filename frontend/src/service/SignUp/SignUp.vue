@@ -6,16 +6,41 @@
         <h2 class="subLoginTitle">브랜디/하이버의 통합회원으로 가입됩니다.</h2>
         <div class="loginContainer">
           <h3>아이디 <span class="required">(필수)</span></h3>
-          <input class="loginInput" placeholder="아이디 입력" v-model="username" />
+          <input
+            class="loginInput"
+            placeholder="아이디 입력"
+            v-model="username"
+          />
           <h3>이메일 <span class="required">(필수)</span></h3>
           <input class="loginInput" placeholder="이메일 입력" v-model="email" />
           <h3>비밀번호 <span class="required">(필수)</span></h3>
-          <input class="loginInput" placeholder="비밀번호 입력" type="password" v-model="password" />
-          <input class="loginInput" placeholder="비밀번호 재입력" type="password" v-model="rePassword" @keyup="checkPassword" />
+          <input
+            class="loginInput"
+            placeholder="비밀번호 입력"
+            type="password"
+            v-model="password"
+          />
+          <input
+            class="loginInput"
+            placeholder="비밀번호 재입력"
+            type="password"
+            v-model="rePassword"
+            @keyup="checkPassword"
+          />
           <p v-if="!checkPassword">비밀번호가 옳바르지 않습니다.</p>
           <h3>휴대폰 번호 <span class="required">(필수)</span></h3>
-
-          <h3><label><CheckBox type="checkbox" v-model="allMark" /> 약관 모두 동의</label></h3>
+          <input
+            class="loginInput"
+            placeholder="휴대폰 번호"
+            type="phone"
+            v-model="phone"
+          />
+          <h3>
+            <label
+              ><CheckBox type="checkbox" v-model="allMark" /> 약관 모두
+              동의</label
+            >
+          </h3>
           <div class="agreement">
             <div class="line">
               <label>
@@ -33,7 +58,8 @@
             <div class="line">
               <label>
                 <CheckBox type="checkbox" v-model="marks.mark3" />
-                개인정보수집 및 이용에 대한 안내 <span class="required">(필수)</span>
+                개인정보수집 및 이용에 대한 안내
+                <span class="required">(필수)</span>
               </label>
               <a class="more">내용보기</a>
             </div>
@@ -53,8 +79,14 @@
             </div>
           </div>
 
-          <button type="button" class="loginBtn" :disabled="!canRegister"
-            @click="onSuccess">가입하기</button>
+          <button
+            type="button"
+            class="loginBtn"
+            :disabled="!canRegister"
+            @click="onSuccess"
+          >
+            가입하기
+          </button>
         </div>
       </main>
     </section>
@@ -62,23 +94,24 @@
 </template>
 
 <script>
-import { SERVER_IP } from '@/config.js'
+// import { SERVER_IP } from '@/config.js'
 import API from '@/service/util/service-api'
 import { mapMutations } from 'vuex'
 import CheckBox from '@/service/Components/CheckBox'
-
+import Message from '@/admin/utils/message'
 const serviceStore = 'serviceStore'
 
 export default {
   components: {
     CheckBox
   },
-  data () {
+  data() {
     return {
       username: '',
       password: '',
       rePassword: '',
       isPassword: false,
+      phone: '',
       email: '',
       marks: {
         mark1: false,
@@ -92,44 +125,51 @@ export default {
   methods: {
     ...mapMutations(serviceStore, ['getStorageToken']),
 
-    onSuccess () {
+    onSuccess() {
+      let res
       const data = {
-        username: this.username,
+        id: this.username,
         password: this.password,
         email: this.email,
-        user_type_id: 1
-
-        // phone: this.phone1 + this.phone2 + this.phone3
+        user_type_id: 1,
+        phone: this.phone,
+        receiving_event_is_agreed: this.marks.mark4,
+        notifying_benefit_is_agreed: this.marks.mark5
       }
       API.methods
-        .post(`${SERVER_IP}/user/signup`, data)
-        .then(() => {
-          alert('가입이 완료되었습니다!')
-          this.$router.push('/main')
+        // .post(`${SERVER_IP}/user/signup`, data)
+        .post('/user/signup', data)
+        .then((response) => {
+          console.log('백엔드 응답', response)
+          res = response
+          console.log(res)
+          if (res.data.result.status_code) {
+            Message.success('가입이 완료되었습니다!')
+            this.$router.push('/main')
+          }
         })
         .catch(() => {
-          alert('가입이 실패하였습니다. 다시 시도해주세요.')
-          this.$router.push('/signup')
+          Message.error(String(res.data.user_error_message))
+          this.$router.push('/user/signup')
         })
     }
   },
-  mounted () {
-  },
+  mounted() {},
   computed: {
-    checkPassword () {
+    checkPassword() {
       return this.password === this.rePassword
     },
-    canRegister () {
+    canRegister() {
       return this.marks.mark1 && this.marks.mark2 && this.marks.mark3
     },
     allMark: {
-      get () {
+      get() {
         for (const key in this.marks) {
           if (!this.marks[key]) return false
         }
         return true
       },
-      set (v) {
+      set(v) {
         for (const key in this.marks) {
           this.marks[key] = v
         }
@@ -155,31 +195,31 @@ span.required {
     flex-direction: column;
     align-items: center;
 
-    h3 > label > input[type=checkbox]::after {
+    h3 > label > input[type='checkbox']::after {
       top: -8px;
     }
     label {
-      > input[type=checkbox] {
+      > input[type='checkbox'] {
         width: 30px;
         &:checked::after {
           border-color: #000;
           color: #000;
         }
-        &::after{
+        &::after {
           top: -3px;
           position: relative;
           opacity: 1;
           display: inline-block;
-          content: "V";
-          color: #DDD;
+          content: 'V';
+          color: #ddd;
           line-height: 22px;
           font-size: 10px;
           text-align: center;
           width: 22px;
           height: 22px;
-          border: 2px solid #DDD;
+          border: 2px solid #ddd;
           border-radius: 5px;
-          background: #FFF;
+          background: #fff;
         }
       }
     }
@@ -189,14 +229,14 @@ span.required {
       font-weight: bold;
       margin-bottom: 5px;
       color: #000;
-      font-family: "Spoqa Han Sans", Sans-serif;
+      font-family: 'Spoqa Han Sans', Sans-serif;
     }
 
     .subLoginTitle {
       margin-top: 5px;
       font-size: 18px;
       font-weight: 100;
-      font-family: "Spoqa Han Sans", Sans-serif;
+      font-family: 'Spoqa Han Sans', Sans-serif;
     }
 
     .loginContainer {
@@ -208,7 +248,7 @@ span.required {
       justify-content: center;
 
       ::placeholder {
-        color: #CCC;
+        color: #ccc;
         font-size: 16px;
         // font-style: italic;
       }
@@ -232,7 +272,7 @@ span.required {
           width: 19%;
           border: 1px solid #000;
           border-radius: 5px;
-          background: #FFF;
+          background: #fff;
         }
       }
       .birthday {
@@ -347,11 +387,11 @@ span.required {
         width: 100%;
         margin: 30px 0;
         border: none;
-        border-top: 2px solid #F1F1F1;
+        border-top: 2px solid #f1f1f1;
       }
 
       .agreement {
-        border: 1px solid #CCC;
+        border: 1px solid #ccc;
         border-radius: 20px;
         padding: 20px 30px;
         .line {
