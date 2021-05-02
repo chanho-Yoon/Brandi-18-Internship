@@ -51,7 +51,7 @@ def create_endpoints(app, services):
                     view_func=SignInView.as_view('signin_view', account_service),
                     methods=['POST'])
     
-    app.add_url_rule("/signin/social",
+    app.add_url_rule("/user/social",
                     view_func=SignInSocialView.as_view('signin_social_view', account_service),
                     methods=['POST'])
     

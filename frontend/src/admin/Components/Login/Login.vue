@@ -66,7 +66,7 @@ export default {
               response.data.result.accessToken
             )
             localStorage.setItem(
-              'acount_type_id',
+              'account_type_id',
               response.data.result.account_type_id
             )
           }
