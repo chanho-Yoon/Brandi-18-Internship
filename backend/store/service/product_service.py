@@ -46,7 +46,7 @@ class ProductService:
                     'is_represent' : image['is_represent']
                 }
             for image in product_image],
-            # 상품의 옵션 중 전체 색상
+            # 상품의 옵션 리스트
             'options' : [
                 {
                     'id' : option['option_id'],

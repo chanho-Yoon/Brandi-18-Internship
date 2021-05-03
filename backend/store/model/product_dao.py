@@ -55,7 +55,7 @@ class ProductDao:
             AND
                 pi.is_deleted = 0
         """
-        # 상품 색상 정보 가져오기
+        # 상품 옵션 정보 가져오기
         option_sql = """
             SELECT 
                 o.id as option_id,
