@@ -1,7 +1,8 @@
 from .product_view import (
                             ProductView, 
-                            ProductDetailView, 
-                         
+                            ProductDetailView,
+                            ProductOptionView,
+                            ProductQuestionAnswerView
 )
 
 from .order_view import (
@@ -29,9 +30,17 @@ def create_endpoints(app, services):
                     view_func=ProductView.as_view('product_view', product_service), 
                     methods=['GET','POST', 'PATCH'])
 
-    app.add_url_rule("/products/<product_code>", 
+    app.add_url_rule("/products/<int:product_id>", 
                     view_func=ProductDetailView.as_view('product_detail_view', product_service), 
-                    methods=['GET','POST', 'PATCH'])
+                    methods=['GET','POST', 'PATCH']),
+    
+    app.add_url_rule("/products/<int:product_id>/<int:color_id>", 
+                    view_func=ProductOptionView.as_view('product_option_view', product_service), 
+                    methods=['GET'])
+    
+    app.add_url_rule("/products/qna/<int:product_id>", 
+                    view_func=ProductQuestionAnswerView.as_view('product_question_answer_view', product_service), 
+                    methods=['GET'])
 
     # order
     app.add_url_rule("/orders",
