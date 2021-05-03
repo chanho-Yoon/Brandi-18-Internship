@@ -32,9 +32,7 @@ class ProductDao:
                 s.id as seller_id,
                 p.title as title,
                 p.price as price,
-                p.discount_rate,
-                p.discount_start_date,
-                p.discount_end_date,
+                IF(p.discount_start_date <= now() AND p.discount_end_date >= now(), TRUNCATE(p.discount_rate, 2), 0) as discount_rate,
                 p.content as detail_description,
                 p.id as product_id
             FROM
@@ -60,13 +58,21 @@ class ProductDao:
         # 상품 색상 정보 가져오기
         option_sql = """
             SELECT 
-            DISTINCT c.name as name,
-                o.color_id as color_id
+                o.id as option_id,
+                o.size_id as size_id,
+                o.color_id as color_id,
+                s.name as size_name,
+                c.name as color_name,
+                o.price as price,
+                o.stock as stock
             FROM
                 options as o
             INNER JOIN
                 color as c
                 ON c.id = o.color_id
+            INNER JOIN
+                size as s
+                ON s.id = o.size_id
             WHERE
                 o.product_id = %(product_id)s
             AND
@@ -79,7 +85,7 @@ class ProductDao:
                 pi.image_url as image_url,
                 p.title as title,
                 p.price,
-                p.discount_rate as discount_rate,
+                IF(p.discount_start_date <= now() AND p.discount_end_date >= now(), TRUNCATE(p.discount_rate, 2), 0) as discount_rate,
                 discount_start_date,
                 discount_end_date
             FROM
@@ -100,6 +106,11 @@ class ProductDao:
         with conn.cursor() as cursor:
             cursor.execute(product_detail_sql, params)
             product_detail = cursor.fetchone()
+            
+            # 데이터베이스에 상품 존재하는지 확인
+            if not product_detail:
+                raise DataNotExists('상품이 존재하지 않습니다.', 'product does not exist')
+            
             cursor.execute(image_sql, params)
             product_image = cursor.fetchall()
             cursor.execute(option_sql, params)
@@ -108,49 +119,6 @@ class ProductDao:
             other_product = cursor.fetchall()
 
             return product_detail, product_image, product_option, other_product
-
-    # 선택한 상품아이디, 색상 아이디에 따른 사이즈 정보 가져오기
-    def get_product_option(self, conn, params):
-        sql = """
-            SELECT
-                o.size_id as size_id,
-                s.name as size_name,
-                o.stock as stock,
-                o.price as price,
-                o.id as option_id
-            FROM
-                options as o
-            INNER JOIN
-                size as s
-                ON s.id = o.size_id
-            WHERE
-                o.product_id = %(product_id)s
-            AND
-                o.color_id = %(color_id)s
-            AND
-                o.is_deleted = 0
-        """
-        with conn.cursor() as cursor:
-            cursor.execute(sql, params)
-            return cursor.fetchall()
-    
-    # 상품 색상 존재여부 확인
-    def check_product_color_exists(self, conn, params):
-        sql = """
-            SELECT
-                COUNT(0) as count
-            FROM
-                options as o
-            WHERE
-                o.product_id = %(product_id)s
-            AND
-                o.color_id = %(color_id)s
-            AND 
-                o.is_deleted = 0
-        """
-        with conn.cursor() as cursor:
-            cursor.execute(sql, params)
-            return cursor.fetchone()
 
     # 상품 질문, 응답 가져오기
     def get_product_question_answer(self, conn, request_data):

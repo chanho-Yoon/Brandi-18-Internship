@@ -47,27 +47,6 @@ class ProductDetailView(MethodView):
             except Exception as e:
                 raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
 
-class ProductOptionView(MethodView):
-    def __init__(self, service):
-        self.service = service
-    
-    @validate_params(
-        Param('product_id', PATH, int),
-        Param('color_id', PATH, int)
-    )
-    def get(self, valid:ValidRequest, product_id, color_id):
-        conn = None
-        try:
-            conn = get_connection()
-            params = valid.get_path_params()
-            return get_response(self.service.get_product_option(conn, params)
-)
-        finally:
-            try:
-                conn.close()
-            except Exception as e:
-                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
-
 class ProductQuestionAnswerView(MethodView):
     def __init__(self, service):
         self.service = service
