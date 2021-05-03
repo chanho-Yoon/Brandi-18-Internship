@@ -24,13 +24,22 @@ class ProductDetailView(MethodView):
         Param('product_id', PATH, int)
     )
     def get(self, valid: ValidRequest, product_id):
+        """서비스 페이지의 상품 상세 정보 출력
+
+        서비스 메인페이지에서 상품을 클릭했을 때 해당 상품 아이디를 받아 상세 정보를 출력한다.
+
+        Args:
+            product_id (int): 상품 아이디 
+
+        Returns:
+            [dict]: 해당 상품의 상세정보, 상품이 가진 색상 전체, 같은 셀러의 다른 상품을 전달
+        """
         conn = None
         try:
             conn = get_connection()
             params = valid.get_path_params()
-            result = self.service.get_product_detail(conn, params)
-
-            return get_response(result)
+            
+            return get_response(self.service.get_product_detail(conn, params))
 
         finally:
             try:
@@ -51,11 +60,8 @@ class ProductOptionView(MethodView):
         try:
             conn = get_connection()
             params = valid.get_path_params()
-
-            result = self.service.get_product_option(conn, params)
-
-            return get_response(result)
-
+            return get_response(self.service.get_product_option(conn, params)
+)
         finally:
             try:
                 conn.close()

@@ -145,6 +145,8 @@ class ProductDao:
                 o.product_id = %(product_id)s
             AND
                 o.color_id = %(color_id)s
+            AND 
+                o.is_deleted = 0
         """
         with conn.cursor() as cursor:
             cursor.execute(sql, params)
@@ -239,6 +241,8 @@ class ProductDao:
                 questions as q
             WHERE
                 q.product_id = %(product_id)s
+            AND
+                q.is_deleted = 0
         """
         with conn.cursor() as cursor:
             cursor.execute(count_question_sql, request_data)

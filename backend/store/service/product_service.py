@@ -105,7 +105,7 @@ class ProductService:
         # 요청으로 들어온 값을 복합객체, 내용 복사
         request_data = copy.deepcopy(params)
         
-        # 페이지네이션 위한 OffSET 설정
+        # 페이지네이션 위한 OFFSET 설정
         request_data['offset'] = (request_data['page'] - 1) * request_data['limit']
 
         # 데이터베이스에 상품 존재하는지 확인
