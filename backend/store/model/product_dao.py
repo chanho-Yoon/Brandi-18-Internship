@@ -21,7 +21,7 @@ class ProductDao:
         # 대표이미지 상호 상품명 할인율  (할인)가격  원가격 판매량 할인시작,종료
         sql = """ 
                 SELECT 
-                 pi.image_url AS product_img,
+                    pi.image_url AS product_img,
                     se.english_brand_name AS store_name, 
                     pr.title AS product_name,     
                     pr.discount_rate AS discount_rate, 

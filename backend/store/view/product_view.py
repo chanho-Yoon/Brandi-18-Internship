@@ -20,13 +20,11 @@ class ProductView(MethodView):
         Param('offset', GET, int, required=False, default=0),
     )
        
-    # @LoginRequired('')
     def get(self, valid: ValidRequest):
         """ 메인페이지
             최신등록된 상품순으로 출력
         Args:
-            conn (pymysql.connections.Connection): DB 커넥션 객체
-            params (dict): 대표이미지,상호,상품명,할인율,(할인)가격,원가격,판매량
+            valid (dict): 대표이미지,상호,상품명,할인율,(할인)가격,원가격,판매량
         Returns:
             200: 상품 리스트 가져오기 성공
             500: Exception
