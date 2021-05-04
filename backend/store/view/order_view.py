@@ -13,8 +13,9 @@ from utils.decorator import LoginRequired
 class OrderListView(MethodView):
     def __init__(self, service):
         self.service = service
-
+        pass
     
 class OrderView(MethodView):
     def __init__(self, service):
         self.service = service
+        pass
