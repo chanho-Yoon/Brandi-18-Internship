@@ -24,14 +24,17 @@ class ProductDao:
                     pi.image_url AS product_img,
                     se.english_brand_name AS store_name, 
                     pr.title AS product_name,     
-                    pr.discount_rate AS discount_rate, 
-                    (pr.price*(1- pr.discount_rate)) AS price_discounted, 
                     pr.price AS price_origin,	
-                    sum(od.quantity) AS product_sold,			
                     pr.id AS product_id,
                     pr.discount_start_date AS discount_start,
-                    pr.discount_end_date AS discount_end
-
+                    pr.discount_end_date AS discount_end,
+                    pr.discount_rate AS discounted_rate,
+                    IF(pr.discount_start_date <= now() AND pr.discount_end_date >= now(), 
+                            (pr.price*(1- pr.discount_rate)), null) AS price_discounted,
+                    IFNULL((SELECT SUM(quantity)
+                    FROM orders_detail AS od 
+                        WHERE pr.id = od.product_id), null) AS product_sold
+                                
                 FROM products AS pr
 
                 INNER JOIN sellers AS se
@@ -40,18 +43,15 @@ class ProductDao:
                 INNER JOIN product_images AS pi
                     ON pr.id = pi.product_id
                     AND pi.is_represent=1
-
-                LEFT OUTER JOIN orders_detail AS od
-                    ON pr.id = od.product_id
-
+                    
                 WHERE pr.is_displayed=1 
-                GROUP BY pr.id
 
                 ORDER BY pr.created_at DESC
 
-                LIMIT %(limit)s
-                OFFSET %(offset)s
-                """
+                LIMIT %(limit)s 
+
+                OFFSET %(offset)s;
+            """
 
         with conn.cursor() as cursor:
             cursor.execute(sql, dc_params)

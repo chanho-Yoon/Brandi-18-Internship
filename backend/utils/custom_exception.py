@@ -123,3 +123,10 @@ class TokenCreateError(CustomUserError):
         if not dev_error_message:
             dev_error_message = "TokenCreate error"
         super().__init__(status_code, dev_error_message, error_message)
+
+class DataLoadError(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 400
+        if not dev_error_message:
+            dev_error_message = "No More Data to Read"
+        super().__init__(status_code, dev_error_message, error_message)

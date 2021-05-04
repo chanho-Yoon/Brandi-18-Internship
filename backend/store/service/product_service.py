@@ -1,6 +1,7 @@
+import copy
 from model import ProductDao
 from datetime import timedelta, datetime
-from utils.custom_exception import StartDateFail, NoMoreDataError
+from utils.custom_exception import StartDateFail, DataLoadError
 from io import BytesIO
 
 
@@ -13,8 +14,9 @@ class ProductService:
     def __init__(self):
         self.product_dao = ProductDao()
 
-    def get_product_list(self,conn, dc_params):
-        """ 메인 페이지에 출력되는 상품정보
+    def get_product_list(self,conn, params):
+        """ 
+        메인 페이지에 출력되는 상품정보
 
         Args:
             conn (pymysql.connections.Connection): DB 커넥션 객체
@@ -36,23 +38,20 @@ class ProductService:
                     }]
         """
 
-         # 첫 화면 상품갯수 설정 및 더보기 기능 offset 설정
+        dc_params = copy.deepcopy(params)
+        
+        # 첫 화면 상품갯수 설정
         if dc_params['page']==1:
            dc_params['limit']=2 
+        #  더보기 기능 offset 설정
         else:
            dc_params['offset'] = (dc_params['page'] - 1) * 1 + 1
 
         # 상품정보 리스트
         product_info_list = self.product_dao.get_product_list(conn, dc_params)
         
-        # 불러올 상품 정보가 없는 경우
+        #불러올 상품 정보가 없는 경우
         if len(product_info_list) == 0:
-            raise  NoMoreDataError("상품 정보를 가져올 수 없습니다.")
+            raise  DataLoadError("상품 정보를 가져올 수 없습니다.")
 
-        # 할인기간 외 할인률 및 할인가 미표시
-        for  product_info in  product_info_list:
-            if not (product_info['discount_start'] <= datetime.now() and datetime.now() <= product_info['discount_end']):
-                product_info['discount_rate'] = None
-                product_info['price_discounted'] = None
-        
         return product_info_list

@@ -31,9 +31,8 @@ class ProductView(MethodView):
         """
         try:
             params = valid.get_params()
-            dc_params = copy.deepcopy(params)
             conn = get_connection()
-            result = self.service.get_product_list(conn, dc_params)
+            result = self.service.get_product_list(conn, params)
             return get_response(result)
 
         finally:
