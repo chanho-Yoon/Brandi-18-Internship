@@ -1,26 +1,12 @@
-<<<<<<< HEAD
-import copy
+import copy, xlwt
 from flask import request, jsonify, g, send_file
 from flask.views import MethodView
-from flask_request_validator import validate_params, Param, GET, Datetime, ValidRequest, CompositeRule, Min, Max, Enum, JsonParam, JSON, HEADER
 from datetime import datetime
 from connection import get_connection
 from utils.response import get_response, post_response
 from utils.custom_exception import IsInt, IsStr, IsFloat, IsRequired, DatabaseCloseFail
 from flask_request_validator.exceptions import InvalidRequestError, RulesError
-=======
-from flask import request, jsonify, g, send_file
-from flask.views import MethodView
 from flask_request_validator import validate_params, PATH, Param, GET, Datetime, ValidRequest, CompositeRule, Min, Max, Enum, JsonParam, JSON, HEADER
-from datetime import datetime
-from connection import get_connection
-from utils.response import get_response, post_response
-from utils.decorator import LoginRequired, LoginCheck
-from utils.custom_exception import IsInt, IsStr, IsFloat, IsRequired, DatabaseCloseFail
-from flask_request_validator.exceptions import InvalidRequestError, RulesError
-import xlwt
-
->>>>>>> store
 from utils.decorator import LoginRequired
 
 
@@ -60,21 +46,6 @@ class ProductDetailView(MethodView):
     def __init__(self, service):
         self.service = service
 
-<<<<<<< HEAD
-    # 상품 상세
-    # @LoginRequired
-    def get(self, product_code):
-        conn = None
-        try:
-            conn = get_connection()
-            if conn:
-                result = self.service.get_product_detail(conn, product_code)
-
-            return jsonify(result), 200
-
-        finally:
-            conn.close()
-=======
     @validate_params(
         Param('product_id', PATH, int)
     )
@@ -147,4 +118,3 @@ class ProductQuestionAnswerView(MethodView):
                 conn.close()
             except Exception as e:
                 raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
->>>>>>> store
