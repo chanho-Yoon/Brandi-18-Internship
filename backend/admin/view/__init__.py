@@ -1,4 +1,4 @@
-from .product_view import (
+from admin.view.product_view import (
                             ProductView, 
                             ProductDetailView, 
                             ProductSubCategoryView,
@@ -9,17 +9,18 @@ from .product_view import (
                             ProductContentImageView
 )
 
-from .order_view import (
+from admin.view.order_view import (
                             DashboardSellerView,
                             OrderListView,
                             OrderView
 )
 
-from .account_view import (
+from admin.view.account_view import (
                             AccountSignUpView,
                             AccountLogInView,
                             SellerListView,
-                            SellerView
+                            SellerView,
+                            AccountImageView
 )
 
 from utils.error_handler import error_handle
@@ -34,11 +35,11 @@ def create_endpoints(app, services):
     # product
     app.add_url_rule("/products",
                     view_func=ProductView.as_view('product_view', product_service), 
-                    methods=['GET','POST', 'PATCH'])
+                    methods=['GET', 'POST', 'PATCH'])
 
     app.add_url_rule("/products/<product_code>", 
                     view_func=ProductDetailView.as_view('product_detail_view', product_service), 
-                    methods=['GET'])
+                    methods=['GET', 'PATCH'])
 
     app.add_url_rule("/products/seller", 
                     view_func=ProductSellerSearchView.as_view('product_seller_search_view', product_service), 
@@ -98,13 +99,23 @@ def create_endpoints(app, services):
                     view_func=SellerListView.as_view('seller_list_view', account_service),
                     methods=['GET'])
 
-    app.add_url_rule("/sellers",
+    # /sellers/<int:seller_id>/status
+    app.add_url_rule("/sellers/<int:seller_id>",
                     view_func=SellerListView.as_view('seller_update_status_view', account_service),
                     methods=["PATCH"]
                     )
     
-    app.add_url_rule("/sellers/<seller_identification>",
+    app.add_url_rule("/sellers/<int:seller_id>",
                     view_func=SellerView.as_view('seller_view', account_service),
                     methods=["GET"])
+    
+    # /sellers/<int:seller_id>
+    app.add_url_rule("/sellers/<int:seller_id>/management",
+                    view_func=SellerView.as_view('seller_update_view', account_service),
+                    methods=["PATCH"])
+    
+    app.add_url_rule("/sellers/<int:seller_id>/image",
+                    view_func=AccountImageView.as_view('seller_image_view', account_service),
+                    methods=["PATCH"])
     
     error_handle(app)
