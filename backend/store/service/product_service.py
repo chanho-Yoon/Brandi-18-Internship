@@ -151,7 +151,7 @@ class ProductService:
                     # 질문 답변여부
                     'question_answer_status' : question['question_answer_status'],
                     # 질문 내용
-                    'question_content' : question['question_content'],
+                    'question_content' : question['question_content'] if question['account_id'] == g.account_id or question['question_secret_status'] == 0 else '비밀글입니다.',
                     # 질문 등록 유저 identification
                     'user_identification' : question['question_user_identification'],
                     # 질문 등록 유저 아이디
@@ -159,7 +159,7 @@ class ProductService:
                     # 질문 등록일
                     'question_upload_date' : question['question_upload_date'],
                     # 질문 공개 여부
-                    'question_secret_status' : question['question_secret_status'] if question['account_id'] != g.account_id else 0,
+                    'question_secret_status' : question['question_secret_status'],
                     # 답변 정보
                     'answer' : [
                         {   
@@ -168,7 +168,7 @@ class ProductService:
                             # 답변한 질문 아이디
                             'answer_question_id' : answer['answer_question_id'],
                             # 답변 내용
-                            'answer_content' : answer['answer_content'],
+                            'answer_content' : question['question_content'] if question['account_id'] == g.account_id or question['question_secret_status'] == 0 else '비밀글입니다.',
                             # 답변 등록일
                             'answer_upload_date' : answer['answer_upload_date'],
                             # 답변 유저 identification

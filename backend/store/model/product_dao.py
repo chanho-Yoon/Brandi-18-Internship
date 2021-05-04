@@ -132,7 +132,7 @@ class ProductDao:
                 q.answer_status as question_answer_status,
                 q.content as question_content,
                 q.user_id as question_user_id,
-                u.user_identification as question_user_identification,
+                CONCAT(LEFT(u.user_identification, 3), '***') as question_user_identification,
                 q.secret_status as question_secret_status,
                 u.account_id as account_id
             FROM
