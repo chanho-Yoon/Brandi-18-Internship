@@ -182,7 +182,6 @@ class ProductDao:
             AND
                 a.is_deleted = 0
         """
-        
         with conn.cursor() as cursor:
             cursor.execute(question_sql, request_data)
             question_result = cursor.fetchall()
