@@ -1,10 +1,9 @@
+import copy, xlwt
 from flask import g
 from model import ProductDao
 from datetime import timedelta, datetime
 from utils.custom_exception import StartDateFail, DataNotExists
-import xlwt
 from io import BytesIO
-import copy
 # from flask import send_file
 
 # discount date를 확인하고 discount_rate, discount_price 반환
@@ -25,6 +24,48 @@ class ProductService:
 
     def __init__(self):
         self.product_dao = ProductDao()
+
+    def get_product_list(self,conn, params):
+        """ 
+        메인 페이지에 출력되는 상품정보
+
+        Args:
+            conn (pymysql.connections.Connection): DB 커넥션 객체
+            dc_params : params의 deepcopy객체
+
+        Returns:
+            product_info_list = 
+                "result": [{
+                    "discount_end": 할인종료일,
+                    "discount_rate": 할인율,
+                    "discount_start": 할인 시작일,
+                    "price_discounted": 할인적용가격,
+                    "price_origin": 원 가격,
+                    "product_id": 제품 id,
+                    "product_img": 이미지 url,
+                    "product_name": 상품명,
+                    "product_sold": 상품 판매량,
+                    "store_name": 점표명
+                    }]
+        """
+
+        dc_params = copy.deepcopy(params)
+        
+        # 첫 화면 상품갯수 설정
+        if dc_params['page']==1:
+           dc_params['limit']=2 
+        #  더보기 기능 offset 설정
+        else:
+           dc_params['offset'] = (dc_params['page'] - 1) * 1 + 1
+
+        # 상품정보 리스트
+        product_info_list = self.product_dao.get_product_list(conn, dc_params)
+        
+        #불러올 상품 정보가 없는 경우
+        if len(product_info_list) == 0:
+            raise  DataLoadError("상품 정보를 가져올 수 없습니다.")
+
+        return product_info_list
     
     def get_product_detail(self, conn, params):
         # 데이터베이스에 상품 존재하는지 확인
