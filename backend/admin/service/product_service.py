@@ -3,8 +3,7 @@ from flask import g
 from admin.model import ProductDao
 from datetime import timedelta, datetime
 from utils.custom_exception import StartDateFail, DataNotExists
-import xlwt
-from io import BytesIO
+from utils.excel import export_excel_file
 import copy
 from connection import get_s3_connection
 
@@ -52,47 +51,30 @@ class ProductService:
         if 'application/vnd.ms-excel' in headers.values():
             result = self.product_dao.get_products_list(conn, params, headers)
             
-            # 할인가격 key, value 추가
+            # 할인가격, 진열,판매,할인 여부 추가
             for product in result:
-                product['discount_price'] = product['price'] - (product['price'] * product['discount_rate'])
+                product['is_discount'] =  '할인' if product['discount_rate'] else '미할인'
+                product['is_displayed'] = '진열' if product['is_displayed'] else '미진열'
+                product['is_selling'] = '판매' if product['is_selling'] else '미판매'
             
-            output = BytesIO()
-
-            workbook = xlwt.Workbook(encoding='utf-8')
-            worksheet = workbook.add_sheet(u'시트1')
-            worksheet.write(0, 0, u'등록일')
-            worksheet.write(0, 1, u'대표이미지')
-            worksheet.write(0, 2, u'상품명')
-            worksheet.write(0, 3, u'상품코드')
-            worksheet.write(0, 4, u'상품번호')
-            worksheet.write(0, 5, u'셀러속성')
-            worksheet.write(0, 6, u'셀러명')
-            worksheet.write(0, 7, u'판매가')
-            worksheet.write(0, 8, u'할인가')
-            worksheet.write(0, 9, u'판매여부')
-            worksheet.write(0, 10, u'할인여부')
-            worksheet.write(0, 11, u'진열여부')
-
-            idx = 1
-            for row in result:
-                worksheet.write(idx, 0, str(row['upload_date']))
-                worksheet.write(idx, 1, row['image_url'])
-                worksheet.write(idx, 2, row['title'])
-                worksheet.write(idx, 3, row['product_code'])
-                worksheet.write(idx, 4, row['id'])
-                worksheet.write(idx, 5, row['sub_property'])
-                worksheet.write(idx, 6, row['korean_brand_name'])
-                worksheet.write(idx, 7, row['price'])
-                worksheet.write(idx, 8, row['discount_price'])
-                worksheet.write(idx, 9, ['판매' if row['is_selling'] else '미판매'])
-                worksheet.write(idx, 10, ['할인' if row['discount_rate'] > 0 else '미할인'])
-                worksheet.write(idx, 11, ['진열' if row['is_displayed'] else '미진열'])
-                idx += 1
+            # 엑셀 제목 지정
+            title = {
+                'upload_date' : '등록일',
+                'image_url' : '대표이미지',
+                'title' : '상품명',
+                'product_code' : '상품코드',
+                'id' : '상품번호',
+                'sub_property' : '셀러속성',
+                'korean_brand_name' : '셀러명',
+                'price' : '판매가',
+                'is_displayed' : '진열여부',
+                'is_selling' : '판매여부',
+                'discount_price' : '할인가격',
+                'is_discount' : '할인여부'
+            }
             
-            workbook.save(output)
-            output.seek(0)
-            return output
-        
+            return export_excel_file(title, result)
+            
         product_result, total_count_result = self.product_dao.get_products_list(conn, params, headers)
         
         # 할인가격 key, value 추가
