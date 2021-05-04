@@ -1,7 +1,8 @@
 from .product_view import (
                             ProductView, 
-                            ProductDetailView, 
-                         
+                            ProductDetailView,
+                            ProductOptionView,
+                            ProductQuestionAnswerView
 )
 
 from .order_view import (
@@ -29,9 +30,17 @@ def create_endpoints(app, services):
                     view_func=ProductView.as_view('product_view', product_service), 
                     methods=['GET','POST', 'PATCH'])
 
-    app.add_url_rule("/products/<product_code>", 
+    app.add_url_rule("/products/<int:product_id>", 
                     view_func=ProductDetailView.as_view('product_detail_view', product_service), 
-                    methods=['GET','POST', 'PATCH'])
+                    methods=['GET','POST', 'PATCH']),
+    
+    app.add_url_rule("/products/<int:product_id>/<int:color_id>", 
+                    view_func=ProductOptionView.as_view('product_option_view', product_service), 
+                    methods=['GET'])
+    
+    app.add_url_rule("/products/qna/<int:product_id>", 
+                    view_func=ProductQuestionAnswerView.as_view('product_question_answer_view', product_service), 
+                    methods=['GET'])
 
     # order
     app.add_url_rule("/orders",
@@ -43,15 +52,15 @@ def create_endpoints(app, services):
                     methods=['GET'])
 
     # account
-    app.add_url_rule("/signup",
+    app.add_url_rule("/user/signup",
                     view_func=SignUpView.as_view('signup_view', account_service),
                     methods=['POST'])
     
-    app.add_url_rule("/signin",
+    app.add_url_rule("/user/signin",
                     view_func=SignInView.as_view('signin_view', account_service),
                     methods=['POST'])
     
-    app.add_url_rule("/signin/social",
+    app.add_url_rule("/user/social",
                     view_func=SignInSocialView.as_view('signin_social_view', account_service),
                     methods=['POST'])
     

@@ -5,8 +5,18 @@
         <h1 class="loginTitle">오늘 사면 내일 도착!</h1>
         <h2 class="subLoginTitle">무료배송으로 내일 받는 브랜디 LOGIN</h2>
         <div class="loginContainer">
-          <input type="text" class="loginInput" placeholder="아이디 입력" v-model="username" />
-          <input type="password" class="loginInput" placeholder="비밀번호 입력" v-model="password" />
+          <input
+            type="text"
+            class="loginInput"
+            placeholder="아이디 입력"
+            v-model="username"
+          />
+          <input
+            type="password"
+            class="loginInput"
+            placeholder="비밀번호 입력"
+            v-model="password"
+          />
           <a class="loginBtn" @click="login">로그인</a>
           <a class="JoinBtn" @click="linkToSignUp">회원가입</a>
           <div class="loginFind">
@@ -16,10 +26,15 @@
           </div>
           <div></div>
           <h3 class="socialTitle">간편 로그인 / 가입</h3>
-          <GoogleLogin class="googleLogin" :params="params" :onSuccess="onSuccess">
+          <GoogleLogin
+            class="googleLogin"
+            :params="params"
+            :onSuccess="onSuccess"
+          >
             <div class="imgContainer">
               <img src="/Images/google-logo.png" />
-            </div>Google 계정으로 계속하기
+            </div>
+            Google 계정으로 계속하기
           </GoogleLogin>
         </div>
       </main>
@@ -28,10 +43,14 @@
 </template>
 
 <script>
-import SERVER from '@/config'
+// import SERVER from '@/config'
+import Message from '@/admin/utils/message'
 import { GoogleLogin } from 'vue-google-login'
 import API from '@/service/util/service-api'
 import { mapMutations } from 'vuex'
+// import dotenv from 'dotenv'
+
+// dotenv.config()
 
 const serviceStore = 'serviceStore'
 
@@ -40,11 +59,12 @@ export default {
     GoogleLogin
     // Footer
   },
-  data () {
+  data() {
     return {
       // 구글 로그인 하기
       params: {
-        client_id: '11111' // TODO 실제 키로 변경
+        // client_id: '11' // TODO 실제 키로 변경
+        client_id: process.env.VUE_APP_GOOGLE_CLIENT
       },
       renderParams: {
         width: 250,
@@ -57,33 +77,52 @@ export default {
   },
   methods: {
     ...mapMutations(serviceStore, ['getStorageToken']),
-
-    onSuccess (googleUser) {
-      localStorage.setItem('user_id', googleUser.tt.Ad)
-      localStorage.setItem('user_email', googleUser.tt.bu)
+    // 구글 계정 로그인
+    onSuccess(googleUser) {
+      console.log(googleUser)
+      console.log(googleUser.gt.GS)
+      console.log(googleUser.gt.Rt)
+      let res
+      // localStorage.setItem('user_id', googleUser.tt.Ad)
+      // localStorage.setItem('user_email', googleUser.tt.bu)
 
       // axios 사용함에 있어 body에 빈 객체를 넣어야 post에서 headers의 정보를 보내기가 가능하다.
       const data = {
-        username: this.username,
-        password: this.password
+        id: googleUser.gt.GS,
+        email: googleUser.gt.Rt,
+        user_type_id: 1, // 일반 유저 type = 3
+        social_type_id: 1, // 구글 로그인 type = 1
+        social: 'google',
+        account_type_id: 3,
+        receiving_event_is_agreed: 0,
+        notifying_benefit_is_agreed: 0
       }
       const headers = {
-        headers: { Authorization: googleUser.wc.id_token }
+        headers: { Authorization: googleUser.qc.id_token }
       }
       API.methods
-        .post(`${SERVER.IP}/user/signin`, data, headers)
-        .then((res) => {
-          if (res.data.access_token) {
-            localStorage.setItem('access_token', res.data.access_token)
-            localStorage.setItem('user_id', res.data.userId)
-            this.getStorageToken()
+        // .post(`${SERVER.IP}/user/signin`, data, headers)
+        .post('/user/social', data, headers)
+        .then((response) => {
+          res = response
+          console.log(res)
+          if (res.data.result.accessToken) {
+            localStorage.setItem('access_token', res.data.result.accessToken)
+            localStorage.setItem(
+              'account_type_id',
+              res.data.result.account_type_id
+            )
+            // this.getStorageToken()
             this.$router.push('/main')
           } else {
             alert('로그인 정보가 맞지 않습니다. 다시 시도해주세요.')
           }
         })
+        .catch(() => {
+          Message.error(res.data.user_error_message)
+        })
     },
-    linkToSignUp () {
+    linkToSignUp() {
       if (this.getToken) {
         localStorage.removeItem('access_token')
         this.getStorageToken()
@@ -92,18 +131,27 @@ export default {
         this.$route.path !== '/signup' && this.$router.push('/signup')
       }
     },
-    login () {
+    login() {
+      let res
       const data = {
-        username: this.username,
-        password: this.password
+        id: this.username,
+        password: this.password,
+        social: 'user'
       }
-      API.methods.post(`${SERVER.IP}/user/signin`, data)
-        .then((res) => {
-          localStorage.setItem('service_token', res.data.result.accessToken)
+      API.methods
+        // .post(`${SERVER.IP}/user/signin`, data)
+        .post('/user/signin', data)
+        .then((response) => {
+          res = response
+          localStorage.setItem('access_token', res.data.result.accessToken)
+          localStorage.setItem(
+            'account_type_id',
+            res.data.result.account_type_id
+          )
           this.$router.push('/main')
         })
         .catch(() => {
-          alert('로그인이 실패하였습니다. 다시 시도해주세요.')
+          Message.error(res.data.user_error_message)
           this.username = ''
           this.password = ''
         })
@@ -125,14 +173,14 @@ export default {
       font-size: 34px;
       font-weight: bold;
       color: #ff204b;
-      font-family: "Spoqa Han Sans", Sans-serif;
+      font-family: 'Spoqa Han Sans', Sans-serif;
     }
 
     .subLoginTitle {
       margin-top: 20px;
       font-size: 32px;
       font-weight: 100;
-      font-family: "Spoqa Han Sans", Sans-serif;
+      font-family: 'Spoqa Han Sans', Sans-serif;
     }
 
     .loginContainer {
