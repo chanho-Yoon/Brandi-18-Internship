@@ -18,7 +18,8 @@ class ProductDao:
                 p.id,
                 p.seller_id,
                 p.price,
-                IF(p.discount_start_date <= NOW() AND p.discount_end_date <= NOW(), 0, round(p.discount_rate, 2)) as discount_rate,
+                IF(p.discount_start_date <= NOW() AND p.discount_end_date >= NOW(), round(p.discount_rate, 2), 0) as discount_rate,
+                IF(p.discount_start_date <= NOW() AND p.discount_end_date >= NOW(), p.price - p.price * round(p.discount_rate, 2), p.price) as discount_price,
                 p.is_displayed,
                 p.is_selling,
                 s.korean_brand_name,
@@ -339,9 +340,9 @@ class ProductDao:
             'account_id' : g.account_id
         }
 
-        with conn.cursor() as cousor:
-            cousor.execute(sql, product_data)
-            return cousor.fetchall()
+        with conn.cursor() as cursor:
+            cursor.execute(sql, product_data)
+            return cursor.fetchall()
 
     def insert_product_history(self, conn, params):
         """상품 히스토리 입력 함수

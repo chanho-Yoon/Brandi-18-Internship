@@ -48,7 +48,7 @@ class ProductView(MethodView):
         Param('end_date', GET, str, rules=[Datetime('%Y-%m-%d')], required=False),
         Param('select_product_id', GET, list, required=False)
     )
-    # @LoginRequired('seller')
+    @LoginRequired('seller')
     def get(self, valid: ValidRequest):
         """상품 조회 리스트
 
@@ -97,12 +97,15 @@ class ProductView(MethodView):
             # HEADERS로 엑셀파일 요청
             if 'application/vnd.ms-excel' in headers.values():
                 today = datetime.today().strftime('%Y-%m-%d')
-                return send_file(result, attachment_filename=f'{today}product_list.xls', as_attachment=True)
+                return send_file(result, attachment_filename=f'{today}product_list.xlsx', as_attachment=True)
 
             return get_response(result)
 
         finally:
-            conn.close()
+            try:
+                conn.close()
+            except Exception as e:
+                raise DatabaseCloseFail('서버에 알 수 없는 오류가 발생했습니다.')
     
     @LoginRequired('seller')
     def post(self):
