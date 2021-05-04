@@ -11,7 +11,7 @@ class ProductDao:
     def get_products_list(self, conn, params, headers):
         sql_select = """
             SELECT
-                DATE_FORMAT(p.created_at, '%%Y-%%m-%%d %%h:%%i:%%s') as upload_date,
+                p.created_at as upload_date,
                 pi.image_url,
                 p.title,
                 p.product_code,
