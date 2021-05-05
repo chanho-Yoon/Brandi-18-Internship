@@ -9,7 +9,7 @@ class ProductDao:
         pass
 
     def get_products_list(self, conn, params, headers):
-        sql_select = """
+        info_select = """
             SELECT
                 p.created_at as upload_date,
                 pi.image_url,
@@ -25,7 +25,7 @@ class ProductDao:
                 s.korean_brand_name,
                 sp.name as sub_property
         """
-        sql_select1 = """
+        count_select = """
             SELECT
                 count(0) as total_count
         """
@@ -47,7 +47,7 @@ class ProductDao:
                 1 + 1
         """
         
-        sql1 = """
+        page_sql = """
             ORDER BY
                 p.created_at DESC
             LIMIT
@@ -134,14 +134,16 @@ class ProductDao:
                     p.id IN %(select_product_id)s
             """
         # 셀러계정일 때 해당 셀러상품만 검색
-        if params['account_type_id'] == 2:
+        if g.account_type_id == 2:
+            params['account_id'] = g.account_id
+            
             sql += """
                 AND
                     s.account_id = %(account_id)s
             """
-
-        product_sql = sql_select + sql + sql1
-        total_sql = sql_select1 + sql
+        
+        product_sql = info_select + sql + page_sql
+        total_sql = count_select + sql
 
         with conn.cursor() as cursor:
             cursor.execute(product_sql, params)
