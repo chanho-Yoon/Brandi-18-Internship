@@ -327,6 +327,7 @@ class ProductDao:
                 p.id IN %(product_ids)s
         """
 
+        # 셀러계정으로 로그인 시 해당 셀러 상품만 검색
         if g.account_type_id == 2:
             sql  += """
                 AND
