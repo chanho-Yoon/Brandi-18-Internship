@@ -263,30 +263,31 @@ class ProductDao:
             product_check_success_result (list): service layer에서 걸러진 상품 리스트 
             
         """
-        sql = """
-            UPDATE
-                products as p       
-            SET
-        """
-        comma = ''
-        
-        if 'display' in product_check_success_result[0]:
-            sql += """
-                p.is_displayed = %(display)s
+        for product_check_result in product_check_success_result:
+            sql = """
+                UPDATE
+                    products as p       
+                SET
             """
-            comma = ','
-        
-        if 'selling' in product_check_success_result[0]:
-            sql += f"""
-                {comma}p.is_selling = %(selling)s
+            comma = ''
+            
+            if 'display' in product_check_result:
+                sql += """
+                    p.is_displayed = %(display)s
+                """
+                comma = ','
+            
+            if 'selling' in product_check_result:
+                sql += f"""
+                    {comma}p.is_selling = %(selling)s
+                """
+            sql1 = """
+                WHERE
+                    p.id = %(product_id)s
             """
-        sql1 = """
-            WHERE
-                p.id = %(product_id)s
-        """
-        sql += sql1
-        with conn.cursor() as cursor:
-            cursor.executemany(sql, product_check_success_result)
+            sql += sql1
+            with conn.cursor() as cursor:
+                cursor.execute(sql, product_check_result)
 
 
     def check_product_exists(self, conn, params):
@@ -342,8 +343,9 @@ class ProductDao:
         with conn.cursor() as cousor:
             cousor.execute(sql, product_data)
             return cousor.fetchall()
+            
 
-    def insert_product_history(self, conn, params):
+    def insert_product_history(self, conn, product_check_success_result):
         """상품 히스토리 입력 함수
 
         변경된 상품의 이력을 남기는 함수
@@ -359,7 +361,7 @@ class ProductDao:
                 ] 
 
         """
-        product_ids = tuple(map(lambda d:d.get('product_id'), params))
+        product_ids = tuple(map(lambda d:d.get('product_id'), product_check_success_result))
         sql = """
             INSERT INTO product_history(
                 product_id,
