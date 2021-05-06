@@ -5,7 +5,7 @@
         <template slot="label">
           셀러 프로필 <span class="required">*</span>
         </template>
-        <image-upload v-model="dataStore.detailData.profile_image_url" />
+        <image-upload v-model="dataStore.detailData.profile_image_url" :lazyUpload="false" :uploadUrl="profileUploadUrl" fileName="profile"/>
       </a-descriptions-item>
       <a-descriptions-item label="셀러 상태" :span="3">
         {{ dataStore.detailData.seller_status_type }}
@@ -53,6 +53,9 @@ export default {
   computed: {
     constants() {
       return this.$store.state.const
+    },
+    profileUploadUrl() {
+      return `${this.constants.apiDomain}/sellers/${this.dataStore.sellerNo}/image`
     }
   },
   methods: {

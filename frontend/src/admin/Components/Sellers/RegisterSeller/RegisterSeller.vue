@@ -73,6 +73,7 @@ export default {
     // 수정일땐 셀러 번호가 있고, 0 이면 등록
     if (this.sellerNo) {
       this.dataStore.getDetail(this.sellerNo)
+      this.dataStore.sellerNo = this.sellerNo
     }
     document.addEventListener('scroll', this.scrollEvent)
   },
