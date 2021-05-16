@@ -37,34 +37,34 @@ export default {
     Banner,
     ProductBox
   },
-  created () {
+  created() {
     this.getProductData()
   },
-  data () {
+  data() {
     return {
       products: []
     }
   },
   methods: {
-    getProductData () {
+    getProductData() {
       // this.products = mockup.result.data
-      API.methods.get(`${SERVER.IP}/products/list`)
+      API.methods.get(`${SERVER.IP}/product/home`)
         .then((res) => {
           // console.log(res)
-          this.products = res.data.result.data
+          this.products = res.data.result
         })
         .catch(() => {
           this.$router.push('/error/500')
         })
     },
-    numberWithCommas (x) {
+    numberWithCommas(x) {
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
     },
-    linkToDetail (product) {
+    linkToDetail(product) {
       // console.log(product)
-      this.$router.push(`/detail/${product.productId}`)
+      this.$router.push(`/detail/${product.product_id}`)
     },
-    moreItemBtn () {
+    moreItemBtn() {
       this.$router.push('/category')
     }
   }

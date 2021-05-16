@@ -141,6 +141,19 @@ class TokenCreateError(CustomUserError):
             dev_error_message = "TokenCreate error"
         super().__init__(status_code, dev_error_message, error_message)
 
+class IsBool(AbstractRule):
+    def validate(self, value):
+        if not isinstance(value, bool):
+            raise RuleError('invalid request')
+        return value
+
+class TooMuchDataRequests(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 400
+        if not dev_error_message:
+            dev_error_message = "Too Much Data Requests"
+        super().__init__(status_code, dev_error_message, error_message)
+        
 class DataTypeDoesNotMatch(CustomUserError):
     def __init__(self, error_message, dev_error_message=None):
         status_code = 400
@@ -160,4 +173,18 @@ class SellerBrandNameDoesNotExist(CustomUserError):
         status_code = 404
         if not dev_error_message:
             dev_error_message = "Seller brand name does not exist"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class UploadFailtoS3(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 404
+        if not dev_error_message:
+            dev_error_message = "Upload Fail to S3"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class DataCannotBeConverted(CustomUserError):
+    def __init__(self, error_message, dev_error_message):
+        status_code = 400
+        if not dev_error_message:
+            dev_error_message = "Data cannot be converted"
         super().__init__(status_code, dev_error_message, error_message)

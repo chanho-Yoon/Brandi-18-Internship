@@ -64,7 +64,17 @@ export default {
     // productNo
     this.dataStore.getColorList()
     this.dataStore.getSizeList()
-    this.dataStore.getDetail(this.$route.params.productNo)
+    if (this.$route.params.productNo) {
+      this.dataStore.isNew = false
+      this.dataStore.getDetail(this.$route.params.productNo, () => {
+        // 상세 정보를 불러 온 후 카테고리 정보 가져오기
+        // this.dataStore.getSellerDetail(this.dataStore.detailData.basic_info.seller_id)
+        this.dataStore.getSellerDetail(this.dataStore.detailData.basic_info.seller_id)
+        this.dataStore.getSellerSubCategory(this.dataStore.detailData.basic_info.category_id)
+      })
+    } else {
+      this.dataStore.isNew = true
+    }
     document.addEventListener('scroll', this.scrollEvent)
   },
   destroyed() {

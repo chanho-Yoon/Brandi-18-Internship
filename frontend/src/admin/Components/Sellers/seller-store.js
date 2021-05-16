@@ -9,6 +9,7 @@ export default {
   mixins: [AdminApiMixin, CommonMixin],
   data() {
     return {
+      sellerNo: 0, // 셀러 번호 (상세에서 사용함)
       list: [],
       page: 1,
       total: 0,
@@ -115,7 +116,7 @@ export default {
         seller_id: sellerId,
         to_status_type_id: toStatusTypeId
       }
-      this.patch(this.statusUrl + '/' + sellerId, payload)
+      this.patch(this.statusUrl + '/' + sellerId + ':status', payload)
         .then((res) => {
           Message.success('셀러 상태 변경 성공')
           this.load()
@@ -160,9 +161,11 @@ export default {
         })
     },
     putDetail(sellerId, sellerData) {
+      // managers
+      const payload = JSON.parse(JSON.stringify(this.detailData))
+      delete payload.managers
       this.loading = true
-      // const diffData = this.difference(this.detailData, this.backupDetailData)
-      this.patch(this.putUrl, this.detailData)
+      this.patch(this.patchUrl + '/' + sellerId, payload)
         .then((res) => {
           Message.success('셀러 수정 성공')
           this.backupDetailData = JSON.parse(JSON.stringify(this.detailData))

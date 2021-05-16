@@ -9,22 +9,23 @@ class ProductDao:
         pass
 
     def get_products_list(self, conn, params, headers):
-        sql_select = """
+        info_select = """
             SELECT
-                DATE_FORMAT(p.created_at, '%%Y-%%m-%%d %%h:%%i:%%s') as upload_date,
+                p.created_at as upload_date,
                 pi.image_url,
                 p.title,
                 p.product_code,
                 p.id,
                 p.seller_id,
                 p.price,
-                IF(p.discount_start_date <= NOW() AND p.discount_end_date <= NOW(), 0, round(p.discount_rate, 2)) as discount_rate,
+                IF(p.discount_start_date <= NOW() AND p.discount_end_date >= NOW(), round(p.discount_rate, 2), 0) as discount_rate,
+                IF(p.discount_start_date <= NOW() AND p.discount_end_date >= NOW(), p.price - p.price * round(p.discount_rate, 2), p.price) as discount_price,
                 p.is_displayed,
                 p.is_selling,
                 s.korean_brand_name,
                 sp.name as sub_property
         """
-        sql_select1 = """
+        count_select = """
             SELECT
                 count(0) as total_count
         """
@@ -46,7 +47,7 @@ class ProductDao:
                 1 + 1
         """
         
-        sql1 = """
+        page_sql = """
             ORDER BY
                 p.created_at DESC
             LIMIT
@@ -133,14 +134,16 @@ class ProductDao:
                     p.id IN %(select_product_id)s
             """
         # 셀러계정일 때 해당 셀러상품만 검색
-        if params['account_type_id'] == 2:
+        if g.account_type_id == 2:
+            params['account_id'] = g.account_id
+            
             sql += """
                 AND
                     s.account_id = %(account_id)s
             """
-
-        product_sql = sql_select + sql + sql1
-        total_sql = sql_select1 + sql
+        
+        product_sql = info_select + sql + page_sql
+        total_sql = count_select + sql
 
         with conn.cursor() as cursor:
             cursor.execute(product_sql, params)
@@ -204,6 +207,42 @@ class ProductDao:
             cursor.execute(sql, params)
             return cursor.lastrowid
     
+    def create_product_history(self, conn, params: dict):
+        sql = """
+            INSERT INTO
+            product_history (
+                product_id,
+                modify_account_id,
+                is_selling,
+                is_displayed,
+                title,
+                simple_description,
+                content,
+                discount_rate,
+                discount_start_date,
+                discount_end_date,
+                min_amount,
+                max_amount
+            )
+            VALUES (
+                %(product_id)s,
+                %(modify_account_id)s,
+                %(is_selling)s,
+                %(is_displayed)s,
+                %(title)s,
+                %(simple_description)s,
+                %(content)s,
+                %(discount_rate)s,
+                %(discount_start_date)s,
+                %(discount_end_date)s,
+                %(min_amount)s,
+                %(max_amount)s
+            )
+        """
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+            return cursor.lastrowid
+
     def create_option_info_dao(self, conn, option_info: list):
         sql = """
             INSERT INTO
@@ -225,29 +264,44 @@ class ProductDao:
             )
         """
         with conn.cursor() as cursor:
+            option_ids = list()
+            for option in option_info:
+                cursor.execute(sql, option)
+                option_ids.append(cursor.lastrowid)
+            return option_ids
+    
+    def create_option_history(self, conn, option_info: list):
+        sql = """
+            INSERT INTO
+            options_history (
+                option_id,
+                price,
+                modify_account_id,
+                is_deleted
+            )
+            VALUES (
+                %(option_id)s,
+                %(price)s,
+                %(modify_account_id)s,
+                %(is_deleted)s
+            )
+        """
+        with conn.cursor() as cursor:
             cursor.executemany(sql, option_info)
-            return cursor.lastrowid
 
     def insert_image_url_dao(self, conn, params: list):
         sql="""
-            INSERT INTO
-            product_images (
+            INSERT INTO product_images (
                 product_id,
                 image_url,
                 is_represent,
-                is_deleted,
-                created_account_id,
-                delete_account_id,
-                deleted_at
+                created_account_id
             )
             VALUES (
                 %(product_id)s,
                 %(image_url)s,
                 %(is_represent)s,
-                %(is_deleted)s,
-                %(created_account_id)s,
-                %(delete_account_id)s,
-                %(deleted_at)s
+                %(created_account_id)s
             )
         """
         with conn.cursor() as cursor:
@@ -341,12 +395,11 @@ class ProductDao:
             'account_id' : g.account_id
         }
 
-        with conn.cursor() as cousor:
-            cousor.execute(sql, product_data)
-            return cousor.fetchall()
-            
+        with conn.cursor() as cursor:
+            cursor.execute(sql, product_data)
+            return cursor.fetchall()
 
-    def insert_product_history(self, conn, product_check_success_result):
+    def insert_product_history(self, conn, product_check_results):
         """상품 히스토리 입력 함수
 
         변경된 상품의 이력을 남기는 함수
@@ -362,7 +415,6 @@ class ProductDao:
                 ] 
 
         """
-        product_ids = tuple(map(lambda d:d.get('product_id'), product_check_success_result))
         sql = """
             INSERT INTO product_history(
                 product_id,
@@ -397,7 +449,7 @@ class ProductDao:
                 p.id IN %(product_ids)s
         """
         product_data = {
-            'product_ids' : product_ids,
+            'product_ids' : product_check_results,
             'account_id' : g.account_id
         }
         with conn.cursor() as cursor:
@@ -427,7 +479,9 @@ class ProductDao:
                 p.discount_start_date as discount_start_date,
                 p.discount_end_date as discount_end_date,
                 p.min_amount,
-                p.max_amount
+                p.max_amount,
+                p.id as product_id,
+                s.korean_brand_name as seller_name
             FROM 
                 products as p
             INNER JOIN
@@ -582,3 +636,167 @@ class ProductDao:
         with conn.cursor() as cursor:
             cursor.execute(sql)
             return cursor.fetchall()
+    
+    def patch_products_info(self, conn, params: dict):
+        sql="""
+            UPDATE products
+            SET 
+                seller_id = %(seller_id)s,
+                property_id = %(property_id)s,
+                category_id = %(category_id)s,
+                sub_category_id = %(sub_category_id)s,
+                is_selling = %(is_selling)s,
+                is_displayed = %(is_displayed)s,
+                title = %(title)s,
+                simple_description = %(simple_description)s,
+                content = %(content)s,
+                price = %(price)s,
+                discount_rate = %(discount_rate)s,
+                discount_start_date = %(discount_start_date)s,
+                discount_end_date = %(discount_end_date)s,
+                min_amount = %(min_amount)s,
+                max_amount = %(max_amount)s,
+                manufacturer = %(manufacturer)s,
+                date_of_manufacture = %(date_of_manufacture)s,
+                origin = %(origin)s
+            WHERE
+                id = %(product_id)s
+        """
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+    
+    def patch_products_history(self, conn, params: dict):
+        sql = """
+            INSERT INTO product_history (
+                product_id,
+                modify_account_id,
+                is_selling,
+                is_displayed,
+                title,
+                simple_description,
+                content,
+                price,
+                discount_rate,
+                discount_start_date,
+                discount_end_date,
+                min_amount,
+                max_amount,
+                manufacturer,
+                date_of_manufacture,
+                origin
+            )
+            VALUES (
+                %(product_id)s,
+                %(modify_account_id)s,
+                %(is_selling)s,
+                %(is_displayed)s,
+                %(title)s,
+                %(simple_description)s,
+                %(content)s,
+                %(price)s,
+                %(discount_rate)s,
+                %(discount_start_date)s,
+                %(discount_end_date)s,
+                %(min_amount)s,
+                %(max_amount)s,
+                %(manufacturer)s,
+                %(date_of_manufacture)s,
+                %(origin)s
+            )
+        """
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+    
+    def get_options_by_product_id(self, conn, product_id: int):
+        sql = """
+            SELECT
+                op.id AS option_id,
+                op.color_id,
+                op.size_id,
+                op.price,
+                op.stock
+            FROM
+                options AS op
+            WHERE
+                op.product_id = %s
+                AND
+                op.is_deleted = 0
+        """
+        with conn.cursor() as cursor:
+            cursor.execute(sql, product_id)
+            return cursor.fetchall()
+    
+    def update_option_info(self, conn, update_data: list):
+        sql = """
+            UPDATE options
+            SET
+                color_id = %(color_id)s,
+                size_id = %(size_id)s,
+                price = %(price)s,
+                stock = %(stock)s,
+                is_deleted = 0
+            WHERE 
+                product_id = %(product_id)s
+
+        """
+        with conn.cursor() as cursor:
+            cursor.executemany(sql, update_data)
+    
+    def update_option_history(self, conn, update_data: list):
+        sql = """
+            INSERT INTO options_history (
+                option_id,
+                modify_account_id,
+                price,
+                is_deleted
+            )
+            VALUES (
+                %(option_id)s,
+                %(modify_account_id)s,
+                %(price)s,
+                0
+            )
+        """
+        with conn.cursor() as cursor:
+            cursor.executemany(sql, update_data)
+    
+    def delete_option_info(self, conn, exist_options: list):
+        sql = """
+            UPDATE options 
+            SET
+                is_deleted = 1
+            WHERE
+                id = %(option_id)s
+        """
+        with conn.cursor() as cursor:
+            cursor.executemany(sql, exist_options)
+    
+    def delete_option_history(self, conn, exist_options: list):
+        sql = """
+            INSERT INTO options_history (
+                option_id,
+                price,
+                modify_account_id,
+                is_deleted
+            )
+            VALUES (
+                %(option_id)s,
+                %(price)s,
+                %(modify_account_id)s,
+                1
+            )
+        """
+        with conn.cursor() as cursor:
+            cursor.executemany(sql, exist_options)
+        
+    def delete_images_in_product_images(self, conn, params: dict):
+        sql = """
+            UPDATE product_images
+            SET
+                is_deleted = %(is_deleted)s,
+                deleted_at = %(deleted_at)s
+            WHERE
+                product_id = %(product_id)s
+        """
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)

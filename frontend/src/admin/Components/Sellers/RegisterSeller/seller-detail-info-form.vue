@@ -2,7 +2,7 @@
   <div>
     <a-descriptions bordered size="small" class="seller-from" label-width="20%">
       <a-descriptions-item label="셀러페이지 배경이미지" :span="3">
-        <image-upload  v-model="dataStore.detailData.background_image_url" />
+        <image-upload  v-model="dataStore.detailData.background_image_url" :lazyUpload="false" :uploadUrl="backgroubdUploadUrl" fileName="background"/>
       </a-descriptions-item>
       <a-descriptions-item :span="3">
         <template slot="label">셀러 한줄 소개 <span class="required">*</span></template>
@@ -116,6 +116,9 @@ export default {
   computed: {
     constants() {
       return this.$store.state.const
+    },
+    backgroubdUploadUrl() {
+      return `${this.constants.apiDomain}/sellers/${this.dataStore.sellerNo}/image`
     }
   },
   methods: {
