@@ -397,7 +397,7 @@ class ProductDao:
             cursor.execute(sql, product_data)
             return cursor.fetchall()
 
-    def insert_product_history(self, conn, params):
+    def insert_product_history(self, conn, product_check_results):
         """상품 히스토리 입력 함수
 
         변경된 상품의 이력을 남기는 함수
@@ -413,7 +413,6 @@ class ProductDao:
                 ] 
 
         """
-        product_ids = tuple(map(lambda d:d.get('product_id'), params))
         sql = """
             INSERT INTO product_history(
                 product_id,
@@ -448,7 +447,7 @@ class ProductDao:
                 p.id IN %(product_ids)s
         """
         product_data = {
-            'product_ids' : product_ids,
+            'product_ids' : product_check_results,
             'account_id' : g.account_id
         }
         with conn.cursor() as cursor:

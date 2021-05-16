@@ -347,7 +347,7 @@ class ProductService:
         self.product_dao.patch_product_selling_or_display_status(conn, product_check_success_result)
         
         # 상품 히스토리에 변경 이력 저장
-        self.product_dao.insert_product_history(conn, product_check_success_result)
+        self.product_dao.insert_product_history(conn, product_check_results)
 
         return product_check_fail_result
 
