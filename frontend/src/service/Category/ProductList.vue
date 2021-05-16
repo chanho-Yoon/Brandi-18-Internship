@@ -4,7 +4,12 @@
       <DropDown class="order-box" :items="orderList"></DropDown>
     </div>
     <div class="products">
-      <ProductBox :product="product" v-for="product in productList" :key="product" @linkToDetail="linkToDetail"></ProductBox>
+      <ProductBox
+        :product="product"
+        v-for="product in productList"
+        :key="product"
+        @linkToDetail="linkToDetail"
+      ></ProductBox>
     </div>
     <div>
       <button class="moreItemBtn" @click="moreItemBtn">더보기</button>
@@ -23,7 +28,7 @@ import { EventBus } from '@/service/util/event-bus'
 
 export default {
   name: 'ProductList',
-  created () {
+  created() {
     // const url = `${SERVER.SERVER}/products/list`
     // API.methods
     //   .get(this.subId === 0 ? url : url + '?category=' + this.subId)
@@ -38,7 +43,7 @@ export default {
     //     alert('존재하지 않는 서비스 상품입니다.')
     //   })
 
-    EventBus.$on('select-sub', item => {
+    EventBus.$on('select-sub', (item) => {
       this.subId = item
     })
     API.methods
@@ -59,7 +64,7 @@ export default {
     ProductBox,
     DropDown
   },
-  data () {
+  data() {
     return {
       productList: [],
       // productList: [],
@@ -74,17 +79,17 @@ export default {
     }
   },
   methods: {
-    linkToDetail (product) {
+    linkToDetail(product) {
       this.$router.push(`/detail/${product.productId}`)
     },
-    moreItemBtn () {
+    moreItemBtn() {
       this.offset++
       API.methods
         .get(`${SERVER.IP}/products/list?offset=${this.offset}`)
-        .then(res => {
+        .then((res) => {
           this.productList.concat(res.data)
         })
-        .catch(error => {
+        .catch((error) => {
           alert(error)
         })
     }
