@@ -6,7 +6,7 @@ from flask_request_validator.exceptions import InvalidRequestError, InvalidHeade
 
 from utils.custom_exception import DatabaseCloseFail
 from utils.response import post_response
-
+from utils.decorator import LoginRequired
 from connection import get_connection
 
 class SignUpView(MethodView):

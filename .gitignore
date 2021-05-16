@@ -265,7 +265,7 @@ Temporary Items
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
-
+.vscode
 ### Vue ###
 # gitignore template for Vue.js projects
 #
@@ -305,3 +305,4 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows,vscode,python,vue,flask
 config.py
 __pycache__
+settings.json

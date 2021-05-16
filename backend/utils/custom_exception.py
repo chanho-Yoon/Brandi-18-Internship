@@ -75,6 +75,7 @@ class DataNotExists(CustomUserError):
         status_code = 500
         if not dev_error_message:
             dev_error_message = "order status type id doesn't exist"
+        super().__init__(status_code, dev_error_message, error_message)
 
 class IsInt(AbstractRule):
     def validate(self, value):
@@ -122,4 +123,11 @@ class TokenCreateError(CustomUserError):
         status_code = 400
         if not dev_error_message:
             dev_error_message = "TokenCreate error"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class DataLoadError(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 400
+        if not dev_error_message:
+            dev_error_message = "No More Data to Read"
         super().__init__(status_code, dev_error_message, error_message)
