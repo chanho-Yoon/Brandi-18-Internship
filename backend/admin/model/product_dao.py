@@ -9,9 +9,9 @@ class ProductDao:
         pass
 
     def get_products_list(self, conn, params, headers):
-        sql_select = """
+        info_select = """
             SELECT
-                DATE_FORMAT(p.created_at, '%%Y-%%m-%%d %%h:%%i:%%s') as upload_date,
+                p.created_at as upload_date,
                 pi.image_url,
                 p.title,
                 p.product_code,
@@ -25,7 +25,7 @@ class ProductDao:
                 s.korean_brand_name,
                 sp.name as sub_property
         """
-        sql_select1 = """
+        count_select = """
             SELECT
                 count(0) as total_count
         """
@@ -47,7 +47,7 @@ class ProductDao:
                 1 + 1
         """
         
-        sql1 = """
+        page_sql = """
             ORDER BY
                 p.created_at DESC
             LIMIT
@@ -134,14 +134,16 @@ class ProductDao:
                     p.id IN %(select_product_id)s
             """
         # 셀러계정일 때 해당 셀러상품만 검색
-        if params['account_type_id'] == 2:
+        if g.account_type_id == 2:
+            params['account_id'] = g.account_id
+            
             sql += """
                 AND
                     s.account_id = %(account_id)s
             """
-
-        product_sql = sql_select + sql + sql1
-        total_sql = sql_select1 + sql
+        
+        product_sql = info_select + sql + page_sql
+        total_sql = count_select + sql
 
         with conn.cursor() as cursor:
             cursor.execute(product_sql, params)
@@ -395,7 +397,7 @@ class ProductDao:
             cursor.execute(sql, product_data)
             return cursor.fetchall()
 
-    def insert_product_history(self, conn, params):
+    def insert_product_history(self, conn, product_check_results):
         """상품 히스토리 입력 함수
 
         변경된 상품의 이력을 남기는 함수
@@ -411,7 +413,6 @@ class ProductDao:
                 ] 
 
         """
-        product_ids = tuple(map(lambda d:d.get('product_id'), params))
         sql = """
             INSERT INTO product_history(
                 product_id,
@@ -446,7 +447,7 @@ class ProductDao:
                 p.id IN %(product_ids)s
         """
         product_data = {
-            'product_ids' : product_ids,
+            'product_ids' : product_check_results,
             'account_id' : g.account_id
         }
         with conn.cursor() as cursor:

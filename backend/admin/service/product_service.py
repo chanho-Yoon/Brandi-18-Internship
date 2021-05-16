@@ -52,25 +52,25 @@ class ProductService:
             result = self.product_dao.get_products_list(conn, params, headers)
             
             # 할인가격, 진열,판매,할인 여부 추가
-            for product in result:
+            for product in result: 
                 product['is_discount'] =  '할인' if product['discount_rate'] else '미할인'
                 product['is_displayed'] = '진열' if product['is_displayed'] else '미진열'
                 product['is_selling'] = '판매' if product['is_selling'] else '미판매'
             
             # 엑셀 제목 지정
             title = {
-                'upload_date' : '등록일',
-                'image_url' : '대표이미지',
-                'title' : '상품명',
-                'product_code' : '상품코드',
-                'id' : '상품번호',
-                'sub_property' : '셀러속성',
+                'upload_date'       : '등록일',
+                'image_url'         : '대표이미지',
+                'title'             : '상품명',
+                'product_code'      : '상품코드',
+                'id'                : '상품번호',
+                'sub_property'      : '셀러속성',
                 'korean_brand_name' : '셀러명',
-                'price' : '판매가',
-                'is_displayed' : '진열여부',
-                'is_selling' : '판매여부',
-                'discount_price' : '할인가격',
-                'is_discount' : '할인여부'
+                'price'             : '판매가',
+                'is_displayed'      : '진열여부',
+                'is_selling'        : '판매여부',
+                'discount_price'    : '할인가격',
+                'is_discount'       : '할인여부'
             }
             
             return export_excel_file(title, result)
@@ -347,7 +347,7 @@ class ProductService:
         self.product_dao.patch_product_selling_or_display_status(conn, product_check_success_result)
         
         # 상품 히스토리에 변경 이력 저장
-        self.product_dao.insert_product_history(conn, product_check_success_result)
+        self.product_dao.insert_product_history(conn, product_check_results)
 
         return product_check_fail_result
 

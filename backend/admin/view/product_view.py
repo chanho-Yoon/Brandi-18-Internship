@@ -87,8 +87,7 @@ class ProductView(MethodView):
         conn = None
         try:
             params = valid.get_params()
-            params['account_id'] = g.account_id
-            params['account_type_id'] = g.account_type_id
+            
             headers = valid.get_headers()
             conn = get_connection()
             
