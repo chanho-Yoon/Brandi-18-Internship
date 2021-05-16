@@ -267,7 +267,7 @@ export default {
           if (res.data.result.status_code) {
             Message.success('회원가입을 축하합니다!')
             this.isLoading = false
-            this.$router.push('/')
+            this.$router.push('/admin/login')
           }
         })
         .catch((error) => {

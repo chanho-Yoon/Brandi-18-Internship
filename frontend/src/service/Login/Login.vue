@@ -43,21 +43,16 @@
 </template>
 
 <script>
-// import SERVER from '@/config'
 import Message from '@/admin/utils/message'
 import { GoogleLogin } from 'vue-google-login'
 import API from '@/service/util/service-api'
 import { mapMutations } from 'vuex'
-// import dotenv from 'dotenv'
-
-// dotenv.config()
 
 const serviceStore = 'serviceStore'
 
 export default {
   components: {
     GoogleLogin
-    // Footer
   },
   data() {
     return {
@@ -79,19 +74,12 @@ export default {
     ...mapMutations(serviceStore, ['getStorageToken']),
     // 구글 계정 로그인
     onSuccess(googleUser) {
-      console.log(googleUser)
-      console.log(googleUser.gt.GS)
-      console.log(googleUser.gt.Rt)
       let res
-      // localStorage.setItem('user_id', googleUser.tt.Ad)
-      // localStorage.setItem('user_email', googleUser.tt.bu)
-
-      // axios 사용함에 있어 body에 빈 객체를 넣어야 post에서 headers의 정보를 보내기가 가능하다.
       const data = {
         id: googleUser.gt.GS,
         email: googleUser.gt.Rt,
-        user_type_id: 1, // 일반 유저 type = 3
-        social_type_id: 1, // 구글 로그인 type = 1
+        user_type_id: 1, // user_type = 1 (회원)
+        social_type_id: 1, // type = 1 (구글)
         social: 'google',
         account_type_id: 3,
         receiving_event_is_agreed: 0,

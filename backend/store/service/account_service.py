@@ -40,7 +40,7 @@ class AccountService:
         Returns:
             [dict]: account_type_id , accessToken
         """
-        if params["social"] == "user" or params["social"] == "master":
+        if params["social"] == "user":
             if not info or not bcrypt.checkpw(params['password'].encode('utf-8'), info['password'].encode('utf-8')):
                 raise SignInError("정확한 아이디, 비밀번호를 입력해주세요", "post_master_login error")
             account_type_id = self.account_dao.get_account_type_id(conn, info)
@@ -96,6 +96,8 @@ class AccountService:
     # user 로그인
     def post_user_login(self, conn, params):
         user_info = self.account_dao.post_user_login(conn, params)
+        if not user_info:
+            raise SignInError("로그인 정보를 가져오지 못했습니다. 다시 시도해 주세요.", "user_info error")
         result = self.check_hash_password(conn, user_info, params)
         return result
     

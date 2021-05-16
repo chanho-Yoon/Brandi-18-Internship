@@ -5,7 +5,7 @@
     class errorClassName(CustomUserError):
         # parameter 설명
         # 두 번째 인자 : user error message 세 번째 인자 : dev error message 
-        def __init__(self, error_message, dev_error_message):
+        def __init__(self, error_message, dev_error_message=None):
             status_code = 500  # 에러코드
             if not dev_error_message :
                 dev_error_message = "default error message"

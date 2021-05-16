@@ -39,6 +39,7 @@ class AccountSignUpView(MethodView):
         try:
             body = valid.get_json()
             conn = get_connection()
+            # bool 값 체크 !
             self.service.post_account_signup(conn, body)
             conn.commit()
             return post_response({"message": "success", "status_code" : 200}), 200
@@ -58,7 +59,6 @@ class AccountLogInView(MethodView):
     def __init__(self, service):
         self.service = service
 
-    
     @validate_params(
         Param('id', JSON, str, rules=[Pattern("^[a-z]+[a-z0-9@.]{4,19}$")], required=True),
         Param('password', JSON, str, rules=[Pattern('^[A-Za-z0-9@#$]{6,12}$')], required=True)
