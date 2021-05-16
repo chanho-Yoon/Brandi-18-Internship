@@ -48,10 +48,10 @@ export default {
   methods: {
     getProductData() {
       // this.products = mockup.result.data
-      API.methods.get(`${SERVER.IP}/products/list`)
+      API.methods.get(`${SERVER.IP}/product/home`)
         .then((res) => {
           // console.log(res)
-          this.products = res.data.result.data
+          this.products = res.data.result
         })
         .catch(() => {
           this.$router.push('/error/500')
