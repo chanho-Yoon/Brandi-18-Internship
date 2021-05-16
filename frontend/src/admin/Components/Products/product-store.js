@@ -1,15 +1,16 @@
 import AdminApiMixin from '@/admin/mixins/admin-api'
 import CommonMixin from '@/admin/mixins/common-mixin'
 import errors from '@/admin/errors/errors'
-import mockup from '@/admin/mockup/productList.json'
+// import mockup from '@/admin/mockup/productList.json'
 import Message from '@/admin/utils/message'
+import moment from 'moment'
 // import router from '@/router'
 const ExpireTokenException = errors.ExpireTokenException
 const TimeoutException = errors.TimeoutException
 
 export default {
   mixins: [AdminApiMixin, CommonMixin],
-  data () {
+  data() {
     return {
       list: [],
       page: 1,
@@ -21,9 +22,17 @@ export default {
       colors: [],
       sizes: [],
       productCategory: [],
+      productSubCategory: [],
       backupDetailData: {},
       detailData: {
-        productThumbnailImages: ['', '', '', '', ''],
+        basic_info: {
+          seller_id: '',
+          is_selling: 0,
+          is_displayed: 0
+        },
+        selling_info: {},
+        // option_info: [],
+        images: ['', '', '', '', ''],
         firstCategoryId: null, // 1차 카테고리
         productCategoryId: null, // 2차 카테고리
         seller_property_id: 1,
@@ -40,57 +49,76 @@ export default {
         discountPrice: 0, // 할인가
         discountStart: '', // 할인시작일
         discountEnd: '', // 할인종료일
-        productOptions: [] // 옵션 상품
+        option_info: [] // 옵션 상품
       }
     }
   },
   props: {
     router: {
-      default () {
+      default() {
         return null
       }
     }
   },
-  created () {
+  created() {
     // this.load();
   },
   computed: {
-    prefixUrl () {
-      if (this.isMaster()) {
-        return this.constants.apiDomain + '/master'
-      } else {
-        return this.constants.apiDomain + '/seller'
-      }
+    prefixUrl() {
+      return this.constants.apiDomain
     },
-    maxPage () {
+    maxPage() {
       return Math.ceil(this.total / this.pageLen)
     },
     // 셀러 리스트 / 수정
-    listUrl () {
-      return this.prefixUrl + '/product/management'
+    listUrl() {
+      return this.prefixUrl + '/products'
+    },
+    batchUrl() {
+      return this.prefixUrl + '/products'
+    },
+    // 상품 리스트 / 수정
+    getUrl() {
+      return this.prefixUrl + '/products'
+    },
+    // 셀러 상세
+    getSellerUrl() {
+      return this.prefixUrl + '/products/sellers'
+    },
+    // 상품 컬러 리스트
+    getColorUrl() {
+      return this.prefixUrl + '/products/color'
+    },
+    // 상품 사이즈 리스트
+    getSizeUrl() {
+      return this.prefixUrl + '/products/size'
     },
     // 셀러 리스트 / 수정
-    getUrl () {
-      return this.prefixUrl + '/product/management'
+    postUrl() {
+      return this.prefixUrl + '/products'
     },
     // 셀러 리스트 / 수정
-    postUrl () {
+    putUrl() {
+      return this.prefixUrl + '/products'
+    },
+    // 셀러 리스트 / 수정
+    metaUrl() {
       return this.prefixUrl + '/product/management/init'
     },
-    // 셀러 리스트 / 수정
-    putUrl () {
-      return this.prefixUrl + '/product/management'
+    // 셀러 1차 카테고리
+    sellerInfoUrl() {
+      return this.prefixUrl + '/products/seller'
     },
-    // 셀러 리스트 / 수정
-    metaUrl () {
-      return this.prefixUrl + '/product/management/init'
+    // 셀러 2차 카테고리
+    sellerSubCategoryUrl() {
+      return this.prefixUrl + '/products/subcategory'
     },
-    offset () {
+    offset() {
       return (this.page - 1) * this.pageLen
     }
   },
   methods: {
-    load () {
+    load() {
       this.loading = true
       const params = JSON.parse(JSON.stringify(this.filter))
       params.limit = this.pageLen
@@ -104,23 +132,23 @@ export default {
         //         _reject(tokenExpireMockup())
         //     }, 300)
         // })
-        new Promise((resolve, reject) => {
-          setTimeout(() => {
-            this.$emit('test', { a: 1 })
-            resolve(listMockup())
-          }, 300)
-        })
-        // 실제 연동은 아래
-        // this.get(this.listUrl, {
-        //     params: params
+        // new Promise((resolve, reject) => {
+        //   setTimeout(() => {
+        //     this.$emit('test', { a: 1 })
+        //     resolve(listMockup())
+        //   }, 300)
         // })
+        // 실제 연동은 아래
+        this.get(this.listUrl, {
+          params: params
+        })
           .then((res) => {
-            if (res.data && res.data.total_count !== undefined) {
-              res.data.product_list.forEach((d) => {
+            if (res.data && res.data.result.total_count !== undefined) {
+              res.data.result.product.forEach((d) => {
                 d.checked = false
               })
-              const productList = res.data.product_list
-              const totalCount = res.data.total_count
+              const productList = res.data.result.product
+              const totalCount = res.data.result.total_count
               this.total = totalCount
               this.list = productList
               resolve()
@@ -143,45 +171,67 @@ export default {
           })
       })
     },
-    getDetail (productId) {
+    getDetail(productId, callback) {
       this.get(this.getUrl + '/' + productId)
         .then(res => {
-          this.backupDetailData = JSON.parse(JSON.stringify(res.data.result))
+          // this.backupDetailData = JSON.parse(JSON.stringify(res.data.result))
           const response = JSON.parse(JSON.stringify(res.data.result))
-          response.productThumbnailImages = []
-          for (let i = 0; i < 5; i++) {
-            if (response.productThumbnails[i] && response.productThumbnails[i].imageUrl) {
-              response.productThumbnailImages[i] = response.productThumbnails[i].imageUrl
-            } else {
-              response.productThumbnailImages[i] = ''
-            }
-          }
+          // for (let i = 0; i < 5; i++) {
+          //   if (response.productThumbnails[i] && response.productThumbnails[i].imageUrl) {
+          //     response.productThumbnailImages[i] = response.productThumbnails[i].imageUrl
+          //   } else {
+          //     response.productThumbnailImages[i] = ''
+          //   }
+          // }
+          response.images = response.basic_info.images.map(d => { return d.image_url })
           this.detailData = response
+          if (callback) {
+            callback(this.detailData)
+          }
         })
     },
-    putProduct (productId) {
+    async getSellerDetail(sellerId) {
+      const res = await this.get(this.sellerInfoUrl + '/' + sellerId)
+      this.productCategory = res.data.result
+      // /products/sellers/<int:seller_id>
+    },
+    async getSellerSubCategory(categoryId) {
+      const res = await this.get(this.sellerSubCategoryUrl + '/' + categoryId)
+      this.productSubCategory = res.data.result
+    },
+    putProduct(productId) {
+      const images = this.detailData.images
       const payload = JSON.parse(JSON.stringify(this.detailData))
-      payload.productThumbnailImages = payload.productThumbnailImages.filter(d => d).splice(0, 5)
+      payload.basic_info.date_of_manufacture = moment(payload.basic_info.date_of_manufacture).format('YYYY-MM-DD')
+      payload.images = payload.images.filter(d => d).splice(0, 5)
       // deleteProductThumbnails 삭제 (기존에 있고, 현재 없는거)
-      payload.deleteProductThumbnails = this.detailData.productThumbnails.filter(d => {
-        // console.log(d.imageUrl, payload.productThumbnailImages, payload.productThumbnailImages.includes(d.imageUrl))
-        if (!payload.productThumbnailImages.includes(d.imageUrl)) return true
-        return false
-      }).map(d => d.productThumbnailId)
+      // payload.deleteProductThumbnails = this.detailData.productThumbnails.filter(d => {
+      //   // console.log(d.imageUrl, payload.productThumbnailImages, payload.productThumbnailImages.includes(d.imageUrl))
+      //   if (!payload.productThumbnailImages.includes(d.imageUrl)) return true
+      //   return false
+      // }).map(d => d.productThumbnailId)
       // productThumbnailImages 신규 등록
-      payload.productThumbnailImages = payload.productThumbnailImages.filter(d => {
-        // console.log(this.detailData.productThumbnails, d, this.detailData.productThumbnails.includes(d))
-        const findList = this.detailData.productThumbnails.find(dd => dd.imageUrl === d)
-        if (!findList) return true
-        return false
-      })
+      // payload.productThumbnailImages = payload.productThumbnailImages.filter(d => {
+      //   // console.log(this.detailData.productThumbnails, d, this.detailData.productThumbnails.includes(d))
+      //   const findList = this.detailData.productThumbnails.find(dd => dd.imageUrl === d)
+      //   if (!findList) return true
+      //   return false
+      // })
       // console.log(payload)
-      this.patch(this.putUrl + '/' + productId, payload)
+      const formData = new FormData()
+      formData.append('payload', JSON.stringify(payload))
+      images.forEach(file => {
+        if (file) {
+          formData.append('file', file)
+        }
+      })
+
+      this.patch(this.putUrl + '/' + productId, formData)
         .then(res => {
           Message.success('상품 수정 성공')
         })
     },
-    getMeta () {
+    getMeta() {
       this.get(this.metaUrl)
         .then(res => {
           this.productCategory = res.data.result.product_categories
@@ -189,18 +239,38 @@ export default {
           this.sizes = res.data.result.product_sizes
         })
     },
-    addProduct () {
+    getColorList() {
+      this.get(this.getColorUrl)
+        .then(res => {
+          this.colors = res.data.result
+        })
+    },
+    getSizeList() {
+      this.get(this.getSizeUrl)
+        .then(res => {
+          this.sizes = res.data.result
+        })
+    },
+    addProduct() {
       const payload = JSON.parse(JSON.stringify(this.detailData))
-      payload.productThumbnailImages = payload.productThumbnailImages.filter(d => d)
-      this.post(this.postUrl, payload)
+      payload.basic_info.date_of_manufacture = moment(payload.basic_info.date_of_manufacture).format('YYYY-MM-DD')
+      const images = this.detailData.images
+      delete payload.images
+      const formData = new FormData()
+      formData.append('payload', JSON.stringify(payload))
+      images.forEach(file => {
+        if (file) {
+          formData.append('file', file)
+        }
+      })
+
+      // payload.productThumbnailImages = payload.productThumbnailImages.filter(d => d)
+      this.post(this.postUrl, formData)
         .then(response => {
-          if (response.data.result.accessToken) {
-            localStorage.setItem('access_token', response.data.result.accessToken)
-            localStorage.setItem('user_type_id', response.data.result.userTypeId)
-          }
+          Message.success('상품이 일괄 수정 되었습니다.')
         })
         .then(() => {
-          Message.success('상품이 등록되었습니다.', () => {
+          Message.success('상품이 일괄 수정 되었습니다.', () => {
           })
         })
         .catch(err => {
@@ -208,23 +278,71 @@ export default {
             console.log(err.response)
             console.log(err.response.message)
           }
-          Message.error('상품 등록에 실패하였습니다.')
+          Message.error('상품 일괄 수정에 실패하였습니다.')
         })
+
+      // const payload = JSON.parse(JSON.stringify(this.detailData))
+      // payload.productThumbnailImages = payload.productThumbnailImages.filter(d => d)
+      // this.post(this.postUrl, payload)
+      //   .then(response => {
+      //     Message.success('상품이 일괄 수정 되었습니다.')
+      //   })
+      //   .then(() => {
+      //     Message.success('상품이 일괄 수정 되었습니다.', () => {
+      //     })
+      //   })
+      //   .catch(err => {
+      //     if (err.response) {
+      //       console.log(err.response)
+      //       console.log(err.response.message)
+      //     }
+      //     Message.error('상품 일괄 수정에 실패하였습니다.')
+      //   })
     },
-    changePage (page) {
+    changePage(page) {
       this.page = page
     },
-    setFilter (filter) {
+    setFilter(filter) {
       this.filter = filter
+    },
+    getCheckedList() {
+      return this.list.filter(d => {
+        return d.checked
+      })
+    },
+    async batchUpdate(productList, updateValue) {
+      // 상품 일괄 수정
+      const payload = []
+      productList.forEach(product => {
+        const updataData = { product_id: product.id }
+        if (updateValue.selling !== '') {
+          updataData.selling = parseInt(updateValue.selling)
+        }
+        if (updateValue.display !== '') {
+          updataData.display = parseInt(updateValue.display)
+        }
+        payload.push(updataData)
+      })
+      try {
+        // const response =
+        await this.patch(this.batchUrl, payload)
+        Message.success('상품이 일괄 수정 되었습니다.')
+        updateValue.selling = ''
+        updateValue.display = ''
+        this.load()
+      } catch (err) {
+        console.log(err)
+        Message.error('상품이 일괄 수정에 실패하였습니다. ' + err.response.user_error_message)
+      }
     }
   },
   watch: {
-    pageLen (v) {
+    pageLen(v) {
       this.changePage(1)
     }
   }
 }
 
-function listMockup () {
-  return mockup
-}
+// function listMockup() {
+//   return mockup
+// }

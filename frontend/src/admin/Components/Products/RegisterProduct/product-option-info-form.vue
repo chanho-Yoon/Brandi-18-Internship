@@ -15,7 +15,7 @@
           <tr v-for="(item, index) in data.colors" :key="item.value">
             <td :rowspan="data.colors.length" v-if="index == 0">색상</td>
             <td>
-              <a-select show-search :data-source="colors" :filter-option="filterOption" v-model="item.colorId" style="width: 100%">
+              <a-select show-search :data-source="colors" :filter-option="filterOption" v-model="item.color_id" style="width: 100%">
                 <a-select-option :value="item.value" v-for="item in colors" :key="item.value">{{item.text}}</a-select-option>
               </a-select>
             </td>
@@ -27,7 +27,7 @@
           <tr v-for="(item, index) in data.sizes" :key="item.value">
             <td :rowspan="data.sizes.length" v-if="index == 0">사이즈</td>
             <td>
-              <a-select show-search :data-source="sizes" :filter-option="filterOption" v-model="item.sizeId" style="width: 100%">
+              <a-select show-search :data-source="sizes" :filter-option="filterOption" v-model="item.size_id" style="width: 100%">
                 <a-select-option :value="item.value" v-for="item in sizes" :key="item.value">{{item.text}}</a-select-option>
               </a-select>
             </td>
@@ -67,14 +67,14 @@
           </tr>
           </thead>
           <tbody>
-          <tr v-for="(item, index) in dataStore.detailData.productOptions" :key="item.value">
+          <tr v-for="(item, index) in dataStore.detailData.option_info" :key="item.value">
             <td>
-              <a-select show-search :data-source="colors" :filter-option="filterOption" v-model="item.colorId" style="width: 100%">
+              <a-select show-search :data-source="colors" :filter-option="filterOption" v-model="item.color_id" style="width: 100%">
                 <a-select-option :value="item.value" v-for="item in colors" :key="item.value">{{item.text}}</a-select-option>
               </a-select>
             </td>
             <td>
-              <a-select show-search :data-source="sizes" :filter-option="filterOption" v-model="item.sizeId" style="width: 100%">
+              <a-select show-search :data-source="sizes" :filter-option="filterOption" v-model="item.size_id" style="width: 100%">
                 <a-select-option :value="item.value" v-for="item in sizes" :key="item.value">{{item.text}}</a-select-option>
               </a-select>
             </td>
@@ -105,81 +105,84 @@ export default {
   },
   props: {
     dataStore: {
-      default () {
+      default() {
         return {}
       }
     }
   },
-  data () {
+  data() {
     return {
       colorList: [],
       sizeList: [],
       options: [],
       data: {
         // 샘플 데이터
-        productOptions: [
-          {
-            colorId: 6,
-            sizeId: 3,
-            stock: 100
-          }
+        option_info: [
         ],
         colors: [{
-          colorId: ''
+          color_id: ''
         }],
         sizes: [{
-          sizeId: ''
+          size_id: ''
         }]
       }
     }
   },
-  created () {
+  created() {
   },
   computed: {
-    colors () {
-      return this.dataStore.colors.map(d => { return { text: d.name, value: d.id } })
+    colors() {
+      return this.dataStore.colors.map(d => { return { text: d.color_name, value: d.color_id } })
     },
-    sizes () {
-      return this.dataStore.sizes.map(d => { return { text: d.name, value: d.id } })
+    sizes() {
+      return this.dataStore.sizes.map(d => { return { text: d.size_name, value: d.size_id } })
     }
   },
   methods: {
-    addColor (index) {
-      this.data.colors.splice(index + 1, 0, { colorId: '' })
+    addColor(index) {
+      this.data.colors.splice(index + 1, 0, { color_id: '' })
     },
-    popColor (index) {
+    popColor(index) {
       this.data.colors.splice(index, 1)
     },
-    addSize (index) {
-      this.data.sizes.splice(index + 1, 0, { sizeId: '' })
+    addSize(index) {
+      this.data.sizes.splice(index + 1, 0, { size_id: '' })
     },
-    popSize (index) {
+    popSize(index) {
       this.data.sizes.splice(index, 1)
     },
-    filterOption (input, option) {
+    filterOption(input, option) {
       return (
         option.componentOptions.children[0].text.toUpperCase().indexOf(input.toUpperCase()) >= 0
       )
     },
-    applyOptions () {
+    applyOptions() {
       const optionList = []
       // 컬러 > 사이즈 순으로 곱하기 하기
       for (let i = 0, len = this.data.colors.length; i < len; i++) {
         for (let z = 0, len2 = this.data.sizes.length; z < len2; z++) {
+          /*
+          "product_id": 2,
+          "color_id": 1,
+          "size_id": 2,
+          "price": 12000,
+          "stock": 10
+          */
           optionList.push({
-            colorId: this.data.colors[i].colorId,
-            sizeId: this.data.sizes[z].sizeId,
+            color_id: this.data.colors[i].color_id,
+            size_id: this.data.sizes[z].size_id,
+            price: 0,
             stock: 1,
             inventoryYn: 1
           })
         }
       }
-      this.dataStore.detailData.productOptions = optionList
+      this.dataStore.detailData.option_info = optionList
     },
-    popOption (index) {
+    popOption(index) {
       this.options.splice(index, 1)
     },
-    getData () {
+    getData() {
       return JSON.parse(JSON.stringify(this.data))
     }
   }

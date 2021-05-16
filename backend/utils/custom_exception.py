@@ -13,6 +13,8 @@
 '''
 
 from flask import jsonify
+from flask_request_validator import AbstractRule
+from flask_request_validator.exceptions import RuleError, RequiredJsonKeyError, RequestError
 
 class CustomUserError(Exception):
     def __init__(self, status_code, dev_error_message, error_message):
@@ -21,55 +23,168 @@ class CustomUserError(Exception):
         self.error_message = error_message
 
 class DatabaseCloseFail(CustomUserError):
-    def __init__(self, error_message):
+    def __init__(self, error_message, dev_error_message=None):
         status_code = 500
-        dev_error_message = "database.close() error"
+        if not dev_error_message:
+            dev_error_message = "database.close() error"
         super().__init__(status_code, dev_error_message, error_message)
 
-class DatabaseConnectFail(CustomUserError):
+class TokenIsEmptyError(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 400
+        if not dev_error_message:
+            dev_error_message = "token is empty"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class UserNotFoundError(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 404
+        if not dev_error_message:
+            dev_error_message = "user not found"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class JwtInvalidSignatureError(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 500
+        if not dev_error_message:
+            dev_error_message = "signature is damaged"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class JwtDecodeError(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 500
+        if not dev_error_message:
+            dev_error_message = "token is damaged"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class MasterLoginRequired(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 400
+        if not dev_error_message:
+            dev_error_message = "master login required"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class SellerLoginRequired(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 400
+        if not dev_error_message:
+            dev_error_message = "seller login required"
+
+class StartDateFail(CustomUserError):
     def __init__(self,error_message):
+        status_code = 400
+        dev_error_message = "start_date gt end_date error"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class DataNotExists(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
         status_code = 500
         dev_error_message = "database.connect error"
         super().__init__(status_code, dev_error_message, error_message)
 
-class TokenIsEmptyError(CustomUserError):
-    def __init__(self, error_message):
+class RequiredDataError(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
         status_code = 400
-        dev_error_message = "token is empty"
+        dev_error_message = "required data is needed"
+        if not dev_error_message:
+            dev_error_message = "order status type id doesn't exist"
         super().__init__(status_code, dev_error_message, error_message)
 
-class UserNotFoundError(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 404
-        dev_error_message = "user not found"
-        super().__init__(status_code, dev_error_message, error_message)
+class IsInt(AbstractRule):
+    def validate(self, value):
+        if not isinstance(value, int):
+            raise RuleError('invalid request')
+        return value
 
-class JwtInvalidSignatureError(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 500
-        dev_error_message = "signature is damaged"
-        super().__init__(status_code, dev_error_message, error_message)
+class IsStr(AbstractRule):
+    def validate(self, value):
+        if not isinstance(value, str):
+            raise RuleError('invalid request')
+        return value
 
-class JwtDecodeError(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 500
-        dev_error_message = "token is damaged"
-        super().__init__(status_code, dev_error_message, error_message)
+class IsFloat(AbstractRule):
+    def validate(self, value):
+        if not isinstance(value, float):
+            raise RuleError('invalid request')
+        return value
 
-class MasterLoginRequired(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 400
-        dev_error_message = "master login required"
-        super().__init__(status_code, dev_error_message, error_message)
+class IsRequired(AbstractRule):
+    def validate(self, value):
+        if not value:
+            raise RuleError('invalid request')
+        return value
 
-class SellerLoginRequired(CustomUserError):
-    def __init__(self, error_message):
-        status_code = 400
-        dev_error_message = "seller login required"
-        
+class IsBool(AbstractRule):
+    def validate(self, value):
+        if not isinstance(value, bool):
+            raise RuleError('invalid request')
+        return value
+
 class SignUpFail(CustomUserError):
     def __init__(self, error_message, dev_error_message=None):
         status_code = 400
         if not dev_error_message:
             dev_error_message = "SignUpFail error"
+        super().__init__(status_code, dev_error_message, error_message)
+    
+class SignInError(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 400
+        if not dev_error_message:
+            dev_error_message = "SignInFaill error"
+        super().__init__(status_code, dev_error_message, error_message)
+        
+class TokenCreateError(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 400
+        if not dev_error_message:
+            dev_error_message = "TokenCreate error"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class IsBool(AbstractRule):
+    def validate(self, value):
+        if not isinstance(value, bool):
+            raise RuleError('invalid request')
+        return value
+
+class TooMuchDataRequests(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 400
+        if not dev_error_message:
+            dev_error_message = "Too Much Data Requests"
+        super().__init__(status_code, dev_error_message, error_message)
+        
+class DataTypeDoesNotMatch(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 400
+        if not dev_error_message:
+            dev_error_message = "Data type does not match to database's column type"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class DatabaseRollBackError(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 500
+        if not dev_error_message:
+            dev_error_message = "NoneType object has no attribute rollback "
+        super().__init__(status_code, dev_error_message, error_message)
+
+class SellerBrandNameDoesNotExist(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 404
+        if not dev_error_message:
+            dev_error_message = "Seller brand name does not exist"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class UploadFailtoS3(CustomUserError):
+    def __init__(self, error_message, dev_error_message=None):
+        status_code = 404
+        if not dev_error_message:
+            dev_error_message = "Upload Fail to S3"
+        super().__init__(status_code, dev_error_message, error_message)
+
+class DataCannotBeConverted(CustomUserError):
+    def __init__(self, error_message, dev_error_message):
+        status_code = 400
+        if not dev_error_message:
+            dev_error_message = "Data cannot be converted"
         super().__init__(status_code, dev_error_message, error_message)
